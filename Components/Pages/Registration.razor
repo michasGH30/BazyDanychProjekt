@@ -1,0 +1,40 @@
+﻿@page "/registration"
+@inject HttpClient httpClient
+@inject NavigationManager navigationManager
+
+<h3>Registration</h3>
+
+<EditForm Model="reg" FormName="RegistrationForm" OnValidSubmit="OnValidSubmit">
+	<DataAnnotationsValidator />
+	<ValidationSummary />
+	<div class="mb-2">
+		<InputText id="firstName" @bind-Value="reg.FirstName" placeholder="Enter Name" ></InputText>
+	</div>
+	<div class="mb-2">
+		<InputText id="lastName" @bind-Value="reg.LastName" placeholder="Enter Address"></InputText>
+	</div>
+	<div class="mb-2">
+		<InputText id="email" @bind-Value="reg.Email" placeholder="Enter Zipcode"></InputText>
+	</div>
+	<div class="mb-2">
+		<InputText id="passwod" @bind-Value="reg.Password" placeholder="Enter Email"></InputText>
+	</div>
+	<button>SUBMIT</button>
+</EditForm>
+
+@code {
+	RegistrationRequest reg = new RegistrationRequest();
+
+	private async Task OnValidSubmit()
+	{
+
+		var response = await httpClient.PostAsJsonAsync("/api/registration", reg);
+
+		var responseObject = await response.Content.ReadFromJsonAsync<RegistrationResponse>();
+
+		if(responseObject.Success)
+		{
+			navigationManager.NavigateTo("/");
+		}
+	}
+}
