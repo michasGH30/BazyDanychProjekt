@@ -1,8 +1,8 @@
 ﻿using bazyProjektBlazor.Requests;
 using bazyProjektBlazor.Responses;
+using bazyProjektBlazor.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
-using Newtonsoft.Json;
 
 namespace bazyProjektBlazor.Controllers
 {
@@ -22,7 +22,7 @@ namespace bazyProjektBlazor.Controllers
 			command.Parameters.AddWithValue("@firstName", request.FirstName);
 			command.Parameters.AddWithValue("@lastName", request.LastName);
 			command.Parameters.AddWithValue("@email", request.Email);
-			command.Parameters.AddWithValue("@password", request.Password);
+			command.Parameters.AddWithValue("@password", HashPassword.EncryptSHA256(request.Password));
 
 			int rows = command.ExecuteNonQuery();
 			RegistrationResponse response = new();
@@ -34,6 +34,7 @@ namespace bazyProjektBlazor.Controllers
 			{
 				response.Success = false;
 			}
+			connection.Close();
 			return await Task.FromResult(response);
 		}
 	}

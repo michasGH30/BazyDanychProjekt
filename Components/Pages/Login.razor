@@ -1,0 +1,57 @@
+﻿@page "/login"
+@inject HttpClient httpClient
+@inject NavigationManager navigationManager
+
+<PageTitle>Login</PageTitle>
+
+<h3>Login</h3>
+
+<EditForm Model="loginModel" FormName="LoginForm" OnValidSubmit="OnValidSubmit">
+	<DataAnnotationsValidator />
+	<ValidationSummary />
+	<div class="mb-2">
+		<InputText id="email" @bind-Value="loginModel.Email" placeholder="Enter Email" type="email"></InputText>
+	</div>
+	<div class="mb-2">
+		<InputText id="password" @bind-Value="loginModel.Password" placeholder="Enter Password" type="password"></InputText>
+	</div>
+	<button>SUBMIT</button>
+</EditForm>
+
+@if (errorMessageVisiblity)
+{
+	<div class="mb-2">
+		<p style="color:red;">Logowanie się nie powiodło spróbuj ponownie.</p>
+	</div>
+}
+
+@code {
+	LoginRequest loginModel = new LoginRequest();
+	bool errorMessageVisiblity = false;
+
+	private async Task OnValidSubmit()
+	{
+		var response = await httpClient.PostAsJsonAsync("/api/login", loginModel);
+
+		var responseObject = await response.Content.ReadFromJsonAsync<LoginResponse>();
+
+		if (responseObject != null)
+		{
+			Console.WriteLine(responseObject);
+
+			if (responseObject.Success)
+			{
+				errorMessageVisiblity = false;
+				navigationManager.NavigateTo("/");
+			}
+			else
+			{
+				loginModel.Email = "";
+				loginModel.Password = "";
+				errorMessageVisiblity = true;
+			}
+		}
+
+
+	}
+}

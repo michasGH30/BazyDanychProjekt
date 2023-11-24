@@ -2,39 +2,63 @@
 @inject HttpClient httpClient
 @inject NavigationManager navigationManager
 
+<PageTitle>Registration</PageTitle>
+
 <h3>Registration</h3>
 
-<EditForm Model="reg" FormName="RegistrationForm" OnValidSubmit="OnValidSubmit">
+<EditForm Model="registrationModel" FormName="RegistrationForm" OnValidSubmit="OnValidSubmit">
 	<DataAnnotationsValidator />
 	<ValidationSummary />
 	<div class="mb-2">
-		<InputText id="firstName" @bind-Value="reg.FirstName" placeholder="Enter Name" ></InputText>
+		<InputText id="firstName" @bind-Value="registrationModel.FirstName" placeholder="Enter First name" ></InputText>
 	</div>
 	<div class="mb-2">
-		<InputText id="lastName" @bind-Value="reg.LastName" placeholder="Enter Address"></InputText>
+		<InputText id="lastName" @bind-Value="registrationModel.LastName" placeholder="Enter Last name"></InputText>
 	</div>
 	<div class="mb-2">
-		<InputText id="email" @bind-Value="reg.Email" placeholder="Enter Zipcode"></InputText>
+		<InputText id="email" @bind-Value="registrationModel.Email" placeholder="Enter email" type="email"></InputText>
 	</div>
 	<div class="mb-2">
-		<InputText id="passwod" @bind-Value="reg.Password" placeholder="Enter Email"></InputText>
+		<InputText id="password" @bind-Value="registrationModel.Password" placeholder="Enter password" type="password"></InputText>
 	</div>
 	<button>SUBMIT</button>
 </EditForm>
 
+@if(errorMessageVisiblity)
+{
+	<div class="mb-2">
+		<p style="color:red;">Rejestracja się nie powiodła spróbuj ponownie.</p>
+	</div>
+}
+
 @code {
-	RegistrationRequest reg = new RegistrationRequest();
+	RegistrationRequest registrationModel = new RegistrationRequest();
+	bool errorMessageVisiblity = false;
 
 	private async Task OnValidSubmit()
 	{
 
-		var response = await httpClient.PostAsJsonAsync("/api/registration", reg);
+		var response = await httpClient.PostAsJsonAsync("/api/registration", registrationModel);
 
 		var responseObject = await response.Content.ReadFromJsonAsync<RegistrationResponse>();
 
-		if(responseObject.Success)
+		if(responseObject != null)
 		{
-			navigationManager.NavigateTo("/");
+			if (responseObject.Success)
+			{
+				errorMessageVisiblity = false;
+				navigationManager.NavigateTo("/");
+			}
+			else
+			{
+				registrationModel.FirstName = "";
+				registrationModel.LastName = "";
+				registrationModel.Email = "";
+				registrationModel.Password = "";
+				errorMessageVisiblity = true;
+			}
 		}
+
+		
 	}
 }

@@ -1,7 +1,35 @@
 ﻿@page "/"
+@inject HttpClient httpClient
+@inject NavigationManager navigationManager
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+@if (render)
+{
+    <h1>Hello, world!</h1>
 
-Welcome to your new app.
+    <p>Welcome to your new app.</p>
+}
+
+@code
+{
+    bool render = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await httpClient.GetFromJsonAsync<LoginResponse>("/api/login");
+
+        if (response != null)
+        {
+            if (!response.Success)
+            {
+                navigationManager.NavigateTo("/login");
+            }
+            else
+            {
+                render = true;
+            }
+        }
+
+    }
+}
