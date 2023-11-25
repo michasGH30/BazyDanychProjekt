@@ -20,6 +20,8 @@ builder.Services.AddScoped(sp =>
 
 builder.Services.AddControllers();
 
+builder.Services.AddBlazorBootstrap();
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

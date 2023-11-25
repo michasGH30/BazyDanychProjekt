@@ -24,16 +24,11 @@
 	<button>SUBMIT</button>
 </EditForm>
 
-@if(errorMessageVisiblity)
-{
-	<div class="mb-2">
-		<p style="color:red;">Rejestracja się nie powiodła spróbuj ponownie.</p>
-	</div>
-}
-
 @code {
+
+	[Inject] protected ToastService ToastService { get; set; }
+
 	RegistrationRequest registrationModel = new RegistrationRequest();
-	bool errorMessageVisiblity = false;
 
 	private async Task OnValidSubmit()
 	{
@@ -46,7 +41,6 @@
 		{
 			if (responseObject.Success)
 			{
-				errorMessageVisiblity = false;
 				navigationManager.NavigateTo("/");
 			}
 			else
@@ -55,7 +49,7 @@
 				registrationModel.LastName = "";
 				registrationModel.Email = "";
 				registrationModel.Password = "";
-				errorMessageVisiblity = true;
+				ToastService.Notify(new(ToastType.Danger, $"Wystąpił błąd z rejestracją, spróbuj ponownie później"));
 			}
 		}
 

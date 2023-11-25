@@ -18,16 +18,12 @@
 	<button>SUBMIT</button>
 </EditForm>
 
-@if (errorMessageVisiblity)
-{
-	<div class="mb-2">
-		<p style="color:red;">Logowanie się nie powiodło spróbuj ponownie.</p>
-	</div>
-}
 
 @code {
+
+	[Inject] protected ToastService ToastService { get; set; }
+
 	LoginRequest loginModel = new LoginRequest();
-	bool errorMessageVisiblity = false;
 
 	private async Task OnValidSubmit()
 	{
@@ -41,14 +37,13 @@
 
 			if (responseObject.Success)
 			{
-				errorMessageVisiblity = false;
 				navigationManager.NavigateTo("/");
 			}
 			else
 			{
 				loginModel.Email = "";
 				loginModel.Password = "";
-				errorMessageVisiblity = true;
+				ToastService.Notify(new(ToastType.Danger, $"Wystąpił błąd z logowaniem, spróbuj ponownie później"));
 			}
 		}
 

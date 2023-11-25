@@ -50,6 +50,7 @@ namespace bazyProjektBlazor.Controllers
 			if(HttpContext.Session.Keys.Contains("ID"))
 			{
 				response.Success = true;
+				response.Role = HttpContext.Session.GetString("role") ?? "user";
 			}
 			else
 			{

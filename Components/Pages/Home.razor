@@ -16,7 +16,6 @@
             <p>email: @u.Email</p>
         </div>
     }
-
 }
 else
 {
@@ -25,6 +24,8 @@ else
 
 @code
 {
+    [Inject] protected ToastService ToastService { get; set; }
+
     bool render = false;
 
     AllUsersResponse usersResponse = new();
@@ -43,8 +44,10 @@ else
             {
                 usersResponse = await httpClient.GetFromJsonAsync<AllUsersResponse>("/api/user");
                 render = true;
+                ToastService.Notify(new(ToastType.Success, $"Poprawnie załadowano"));
             }
         }
 
     }
+   
 }
