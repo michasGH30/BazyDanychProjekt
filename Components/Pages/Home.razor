@@ -9,11 +9,25 @@
     <h1>Hello, world!</h1>
 
     <p>Welcome to your new app.</p>
+
+    @foreach(User u in usersResponse.Users)
+    {
+        <div>
+            <p>email: @u.Email</p>
+        </div>
+    }
+
+}
+else
+{
+    <p>Loading...</p>
 }
 
 @code
 {
     bool render = false;
+
+    AllUsersResponse usersResponse = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -27,6 +41,7 @@
             }
             else
             {
+                usersResponse = await httpClient.GetFromJsonAsync<AllUsersResponse>("/api/user");
                 render = true;
             }
         }
