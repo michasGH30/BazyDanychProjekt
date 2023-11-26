@@ -1,0 +1,41 @@
+﻿@page "/manage"
+@inject HttpClient httpClient
+@inject NavigationManager navigationManager
+<PageTitle>Home</PageTitle>
+<h3>Manage</h3>
+
+@if(render)
+{
+    <p>@profileResponse.FirstName</p>
+    <p>@profileResponse.LastName</p>
+    <p>@profileResponse.Email</p>
+}
+
+@code {
+    bool render = false;
+    ProfileResponse profileResponse = new();
+    // TODO zmiana profilu
+    // TODO w zależności od roli wyświetlać kolejne listy
+    // 1. Admin: mój profil, departamenty, zespoły, użytkownicy
+    // 2. dyrektor: mój profil, zespoły
+    // 3. lider: mój profil, zespół
+    // 4. użytkownik: mój profil
+    // TODO zmiana roli użytkownika na wyszukiwanie w tabelach i zamiana w users pola na np. isAdmin true/false
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await httpClient.GetFromJsonAsync<LoginResponse>("/api/login");
+
+        if (response != null)
+        {
+            if (!response.Success)
+            {
+                navigationManager.NavigateTo("/login");
+            }
+            else
+            {
+                profileResponse = await httpClient.GetFromJsonAsync<ProfileResponse>("/api/profile");
+                render = true;
+            }
+        }
+    }
+}
