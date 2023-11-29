@@ -64,7 +64,7 @@ namespace bazyProjektBlazor.Controllers
             {
                 response.Success = false;
             }
-            connection.Close();
+            //connection.Close();
             return await Task.FromResult(response);
         }
     }
