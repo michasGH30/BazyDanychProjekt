@@ -1,53 +1,66 @@
 ﻿@page "/"
 @inject HttpClient httpClient
 @inject NavigationManager navigationManager
+@attribute [StreamRendering]
 
 <PageTitle>Home</PageTitle>
 
-@if (render)
+@if (loginResponse == null)
+{
+    <p>Loading...</p>
+    
+}
+else
 {
     <h1>Hello, world!</h1>
 
     <p>Welcome to your new app.</p>
 
-    @foreach(User u in usersResponse.Users)
+    @if (usersResponse == null)
     {
-        <div>
-            <p>email: @u.Email</p>
-        </div>
+        <p>Loading users...</p>
+        
     }
-}
-else
-{
-    <p>Loading...</p>
+    else
+    {
+        @foreach (User u in usersResponse.Users)
+        {
+            <div>
+                <p>email: @u.Email</p>
+            </div>
+        }
+    }
 }
 
 @code
 {
     [Inject] protected ToastService ToastService { get; set; }
 
-    bool render = false;
+    AllUsersResponse? usersResponse;
 
-    AllUsersResponse usersResponse = new();
+    LoginResponse? loginResponse;
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await httpClient.GetFromJsonAsync<LoginResponse>("/api/login");
+        loginResponse = await httpClient.GetFromJsonAsync<LoginResponse>("/api/login");
 
-        if (response != null)
+        if(loginResponse != null)
         {
-            if (!response.Success)
+            if (!loginResponse.Success)
             {
                 navigationManager.NavigateTo("/login");
             }
             else
             {
                 usersResponse = await httpClient.GetFromJsonAsync<AllUsersResponse>("/api/user");
-                render = true;
-                ToastService.Notify(new(ToastType.Success, $"Poprawnie załadowano"));
+                if (usersResponse != null)
+                {
+                    ToastService.Notify(new(ToastType.Success, $"Successfully retrieved data"));
+                }
+                
             }
         }
-
+        
     }
    
 }

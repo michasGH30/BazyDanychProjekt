@@ -1,6 +1,7 @@
 ﻿using bazyProjektBlazor.Requests;
 using bazyProjektBlazor.Responses;
 using bazyProjektBlazor.Utilities;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 
@@ -13,33 +14,64 @@ namespace bazyProjektBlazor.Controllers
 		[HttpPost]
 		public async Task<LoginResponse> Login(LoginRequest request)
 		{
-			using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            LoginResponse response = new();
 
-			connection.Open();
+            int id = -1;
+            string roles = "user";
+            using (var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
 
-			var query = "SELECT ID, role FROM users WHERE email=@email AND password=@password";
-			using var command = new MySqlCommand(query, connection);
-			command.Parameters.AddWithValue("@email", request.Email);
-			command.Parameters.AddWithValue("@password", HashPassword.EncryptSHA256(request.Password));
+                var queryIsInDatabase = "SELECT ID, isAdmin FROM users WHERE email=@email AND password=@password";
+                using var commandIsInDatabase = new MySqlCommand(queryIsInDatabase, connection);
+                commandIsInDatabase.Parameters.AddWithValue("@email", request.Email);
+                commandIsInDatabase.Parameters.AddWithValue("@password", HashPassword.EncryptSHA256(request.Password));
 
-			LoginResponse response = new();
-			MySqlDataReader reader = command.ExecuteReader();
-			if (reader.HasRows)
-			{
-				response.Success = true;
-				while (reader.Read())
-				{
-					HttpContext.Session.SetInt32("ID", reader.GetInt32(0));
-					HttpContext.Session.SetString("role", reader.GetString("role"));
+                using var readerIsInDatabase = commandIsInDatabase.ExecuteReader();
+                if (readerIsInDatabase.HasRows)
+                {
+                    response.Success = true;
 
-				}
-			}
-			else
-				response.Success = false;
+                    while(readerIsInDatabase.Read())
+                    {
+                        id = readerIsInDatabase.GetInt32(0);
+                        if (readerIsInDatabase.GetBoolean(1))
+                            roles += ",admin";
+                    }
 
-			connection.Close();
+                    using (var directorConnection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection")))
+                    {
+                        directorConnection.Open();
+                        using var commandIsDirector = new MySqlCommand("SELECT directorID FROM departments WHERE directorID=@directorID", directorConnection);
+                        commandIsDirector.Parameters.AddWithValue("@directorID", id);
+                        using var readerIsDirector = commandIsDirector.ExecuteReader();
+                        if(readerIsDirector.HasRows)
+                        {
+                            roles += ",director";
+                        }
+                    }
 
-			return await Task.FromResult(response);
+                    using (var leaderConnection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection")))
+                    {
+                        leaderConnection.Open();
+                        using var commandIsLeader = new MySqlCommand("SELECT leaderID FROM teams WHERE leaderID=@leaderID", leaderConnection);
+                        commandIsLeader.Parameters.AddWithValue("@leaderID", id);
+                        using var readerIsLeader = commandIsLeader.ExecuteReader();
+                        if(readerIsLeader.HasRows)
+                        {
+                            roles += ",leader";
+                        }
+                            
+                    }
+                    response.Role = roles;
+                    HttpContext.Session.SetInt32("ID", id);
+                    HttpContext.Session.SetString("role", roles);
+                }
+                else
+                    response.Success = false;
+            }
+
+            return await Task.FromResult(response);
 		}
 
 		[HttpGet]
@@ -50,7 +82,7 @@ namespace bazyProjektBlazor.Controllers
 			if(HttpContext.Session.Keys.Contains("ID"))
 			{
 				response.Success = true;
-				response.Role = HttpContext.Session.GetString("role") ?? "user";
+				response.Role = HttpContext.Session.GetString("role");
 			}
 			else
 			{
