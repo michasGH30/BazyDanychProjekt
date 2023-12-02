@@ -1,11 +1,12 @@
 ﻿@page "/manage"
-@inject HttpClient httpClient
 @inject NavigationManager navigationManager
-@attribute [StreamRendering]
-<PageTitle>Home</PageTitle>
+@inject ILoginService loginService
+@inject IProfileService profileService
+@inject ITeamsService teamsService
+<PageTitle>Manage</PageTitle>
 <h3>Manage</h3>
 
-@if (loginResponse == null)
+@if (!isLogged)
 {
     <p>Loading...</p>
 }
@@ -21,13 +22,74 @@ else
         <p>@profileResponse.LastName</p>
         <p>@profileResponse.Email</p>
     }
+    if (allTeams != null)
+    {
+        foreach (Team team in allTeams)
+        {
+            <div>
+                <h5>@team.Name</h5>
+                <h6>Leader</h6>
+                <ul>
+                    <li>@team.Leader.FirstName</li>
+                    <li>@team.Leader.LastName</li>
+                    <li>@team.Leader.Email</li>
+                </ul>
+                <h6>Department</h6>
+                <ul>
+                    <li>@team.Department.Name</li>
+                    <li>
+                        Director:
+                        <ul>
+                            <li>
+                                @team.Department.Director.FirstName
+                            </li>
+                            <li>
+                                @team.Department.Director.LastName
+                            </li>
+                            <li>
+                                @team.Department.Director.Email
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+                <h6>Members</h6>
+                @if (team.Members != null)
+                {
+                    <ul>
+                        @foreach (User member in team.Members)
+                        {
+                            <li>
+                                Member info:
+                                <ul>
+                                    <li>@member.FirstName</li>
+                                    <li>@member.LastName</li>
+                                    <li>@member.Email</li>
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p>This team has no members</p>
+                }
+            </div>
+        }
+
+    }
+    else
+    {
+        <p>No teams in database</p>
+    }
 
 }
 
 @code {
+    bool isLogged = false;
+
     ProfileResponse? profileResponse;
-    LoginResponse? loginResponse;
     string[]? roles;
+    List<Team>? allTeams;
     // TODO profile change
     // TODO switch in roles
     // 1. Admin: my profile, departments, members of departments, teams, members of teams, users with no team or department
@@ -36,34 +98,33 @@ else
     // 4. user: my profile
     protected override async Task OnInitializedAsync()
     {
-        loginResponse = await httpClient.GetFromJsonAsync<LoginResponse>("/api/login");
+        isLogged = await loginService.IsLogged();
 
-        if (loginResponse != null)
+        if(!isLogged)
         {
-            if (!loginResponse.Success)
+            navigationManager.NavigateTo("/login");
+        }
+        else
+        {
+            var response = await loginService.GetRoles();
+            roles = response.Split(",");
+
+            // all users got their profile informations
+            profileResponse = await profileService.GetProfile();
+
+            if (roles.Contains("admin"))
             {
-                navigationManager.NavigateTo("/login");
+                // all departments, all teams and all users which aren't is any of team or department
+                allTeams = await teamsService.GetAllTeams();
+
             }
-            else
+            if (roles.Contains("director"))
             {
-                roles = loginResponse.Role.Split(",");
-
-                // all users got their profile informations
-                profileResponse = await httpClient.GetFromJsonAsync<ProfileResponse>("/api/profile");
-
-                if (roles.Contains("admin"))
-                {
-                    // all departments, teams and users which aren't is any of team or department
-                }
-                if(roles.Contains("director"))
-                {
-                    // info about department and teams in department
-                }
-                if(roles.Contains("leader"))
-                {
-                    // info about team and users in team
-                }
-
+                // info about department and teams in department
+            }
+            if (roles.Contains("leader"))
+            {
+                // info about team and users in team
             }
         }
     }

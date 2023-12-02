@@ -1,22 +1,23 @@
+using bazyProjektBlazor.Auth;
 using bazyProjektBlazor.Components;
+using bazyProjektBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()
-	.AddInteractiveServerComponents();
+    .AddInteractiveServerComponents();
 
-builder.Services.AddSession();
+builder.Services.AddSingleton<ICurrentUser, CurrentUser>();
 
-builder.Services.AddDistributedMemoryCache();
+builder.Services.AddScoped<ILoginService, LoginService>();
 
-builder.Services.AddScoped(sp =>
-{
-	var httpClient = new HttpClient
-	{
-		BaseAddress = new Uri("https://localhost:7267/")
-	};
-	return httpClient;
-});
+builder.Services.AddScoped<IRegistrationService, RegistrationService>();
+
+builder.Services.AddScoped<IProfileService, ProfileService>();
+
+builder.Services.AddScoped<IUsersService, UsersService>();
+
+builder.Services.AddScoped<ITeamsService, TeamsService>();
 
 builder.Services.AddControllers();
 
@@ -26,9 +27,9 @@ var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
-	app.UseExceptionHandler("/Error", createScopeForErrors: true);
-	// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-	app.UseHsts();
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
@@ -36,10 +37,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
 
-app.UseSession();
-
 app.MapRazorComponents<App>()
-	.AddInteractiveServerRenderMode();
+    .AddInteractiveServerRenderMode();
 
 app.MapControllers();
 

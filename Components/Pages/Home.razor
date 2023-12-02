@@ -1,11 +1,12 @@
 ﻿@page "/"
-@inject HttpClient httpClient
 @inject NavigationManager navigationManager
-@attribute [StreamRendering]
+@inject ILoginService loginService
+@inject IUsersService usersService
 
 <PageTitle>Home</PageTitle>
+<h3>Home</h3>
 
-@if (loginResponse == null)
+@if (!isLogged)
 {
     <p>Loading...</p>
     
@@ -16,14 +17,14 @@ else
 
     <p>Welcome to your new app.</p>
 
-    @if (usersResponse == null)
+    @if (allUsers == null)
     {
         <p>Loading users...</p>
         
     }
     else
     {
-        @foreach (User u in usersResponse.Users)
+        @foreach (User u in allUsers)
         {
             <div>
                 <p>email: @u.Email</p>
@@ -34,31 +35,23 @@ else
 
 @code
 {
-    [Inject] protected ToastService ToastService { get; set; }
+    List<User>? allUsers;
 
-    AllUsersResponse? usersResponse;
-
-    LoginResponse? loginResponse;
+    bool isLogged = false;
 
     protected override async Task OnInitializedAsync()
     {
-        loginResponse = await httpClient.GetFromJsonAsync<LoginResponse>("/api/login");
 
-        if(loginResponse != null)
+        isLogged = await loginService.IsLogged();
+
+        if (!isLogged)
         {
-            if (!loginResponse.Success)
-            {
-                navigationManager.NavigateTo("/login");
-            }
-            else
-            {
-                usersResponse = await httpClient.GetFromJsonAsync<AllUsersResponse>("/api/user");
-                if (usersResponse != null)
-                {
-                    ToastService.Notify(new(ToastType.Success, $"Successfully retrieved data"));
-                }
-                
-            }
+            navigationManager.NavigateTo("/login");
+        }
+        else
+        {
+            allUsers = await usersService.GetAllUsers();
+           
         }
         
     }

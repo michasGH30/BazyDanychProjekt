@@ -1,5 +1,5 @@
 ﻿@page "/registration"
-@inject HttpClient httpClient
+@inject IRegistrationService registrationService
 @inject NavigationManager navigationManager
 
 <PageTitle>Registration</PageTitle>
@@ -33,26 +33,20 @@
 	private async Task OnValidSubmit()
 	{
 
-		var response = await httpClient.PostAsJsonAsync("/api/registration", registrationModel);
+		int response = await registrationService.Register(registrationModel);
 
-		var responseObject = await response.Content.ReadFromJsonAsync<RegistrationResponse>();
-
-		if(responseObject != null)
+		if(response == 0)
 		{
-			if (responseObject.Success)
-			{
-				navigationManager.NavigateTo("/");
-			}
-			else
-			{
-				registrationModel.FirstName = "";
-				registrationModel.LastName = "";
-				registrationModel.Email = "";
-				registrationModel.Password = "";
-				ToastService.Notify(new(ToastType.Danger, $"Wystąpił błąd z rejestracją, spróbuj ponownie później"));
-			}
+			navigationManager.NavigateTo("/");
 		}
-
-		
+		else if(response == 1)
+		{
+			registrationModel.Email = "";
+			ToastService.Notify(new(ToastType.Danger, $"Ten e-mail jest już zajęty"));
+		}
+		else
+		{
+			ToastService.Notify(new(ToastType.Danger, $"Wystąpił błąd z rejestracją, spróbuj ponownie później"));
+		}
 	}
 }

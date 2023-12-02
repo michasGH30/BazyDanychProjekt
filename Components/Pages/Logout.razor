@@ -1,17 +1,17 @@
 ﻿@page "/logout"
-@inject HttpClient httpClient
+@inject ILoginService loginService
 @inject NavigationManager navigationManager
 
 @code {
-    protected override async Task OnInitializedAsync()
+
+    protected override void OnInitialized()
     {
-        var response = await httpClient.PostAsJsonAsync("/api/logout", new LogoutRequest() { });
+        var response = loginService.Logout();
 
-        var responseObject = await response.Content.ReadFromJsonAsync<LogoutResponse>();
-
-        if (responseObject != null)
+        if (response.IsCompleted)
         {
             navigationManager.NavigateTo("/login");
         }
+        base.OnInitialized();
     }
 }

@@ -1,5 +1,5 @@
 ﻿@page "/login"
-@inject HttpClient httpClient
+@inject ILoginService loginService
 @inject NavigationManager navigationManager
 
 <PageTitle>Login</PageTitle>
@@ -27,26 +27,16 @@
 
 	private async Task OnValidSubmit()
 	{
-		var response = await httpClient.PostAsJsonAsync("/api/login", loginModel);
-
-		var responseObject = await response.Content.ReadFromJsonAsync<LoginResponse>();
-
-		if (responseObject != null)
+		var response = await loginService.Login(loginModel);
+		if(response)
 		{
-			Console.WriteLine(responseObject);
-
-			if (responseObject.Success)
-			{
-				navigationManager.NavigateTo("/");
-			}
-			else
-			{
-				loginModel.Email = "";
-				loginModel.Password = "";
-				ToastService.Notify(new(ToastType.Danger, $"Wystąpił błąd z logowaniem, spróbuj ponownie później"));
-			}
+			navigationManager.NavigateTo("/");
 		}
-
-
+		else
+		{
+			loginModel.Email = "";
+			loginModel.Password = "";
+			ToastService.Notify(new(ToastType.Danger, $"Wystąpił błąd z logowaniem, spróbuj ponownie później"));
+		}
 	}
 }

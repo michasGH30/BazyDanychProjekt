@@ -1,23 +1,24 @@
-﻿using bazyProjektBlazor.Requests;
+﻿using bazyProjektBlazor.Auth;
+using bazyProjektBlazor.Requests;
 using bazyProjektBlazor.Responses;
-using bazyProjektBlazor.Utilities;
-using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
-using System.Reflection;
 
-namespace bazyProjektBlazor.Controllers
+namespace bazyProjektBlazor.Services
 {
-
-    [ApiController]
-    [Route("api/[controller]")]
-    public class ProfileController(IConfiguration configuration) :Controller
+    public interface IProfileService
     {
-        [HttpGet]
+        public Task<ProfileResponse> GetProfile();
+
+        public Task<bool> UpdateProfile(ChangeProfileRequest request);
+    }
+
+    public class ProfileService(IConfiguration configuration, ICurrentUser currentUser) : IProfileService
+    {
         public async Task<ProfileResponse> GetProfile()
         {
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
-            int? ID = HttpContext.Session.GetInt32("ID");
+            int ID = currentUser.ID;
 
             connection.Open();
 
@@ -40,11 +41,10 @@ namespace bazyProjektBlazor.Controllers
             return await Task.FromResult(response);
         }
 
-        [HttpPut]
-        public async Task<ChangeProfileResponse> ChangeProfile(ChangeProfileRequest request)
+        public async Task<bool> UpdateProfile(ChangeProfileRequest request)
         {
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            int? ID = HttpContext.Session.GetInt32("ID");
+            int ID = currentUser.ID;
 
             connection.Open();
             var query = "UPDATE users SET firstName=@firstName, lastName=@lastName, email=@email WHERE ID=@ID";
@@ -55,17 +55,14 @@ namespace bazyProjektBlazor.Controllers
             command.Parameters.AddWithValue("@ID", ID);
 
             int rows = command.ExecuteNonQuery();
-            ChangeProfileResponse response = new();
             if (rows > 0)
             {
-                response.Success = true;
+                return await Task.FromResult(true);
             }
             else
             {
-                response.Success = false;
+                return await Task.FromResult(false);
             }
-            //connection.Close();
-            return await Task.FromResult(response);
         }
     }
 }
