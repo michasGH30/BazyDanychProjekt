@@ -6,7 +6,9 @@
 
         public string Name { get; set; } = string.Empty;
 
-        public Department Department { get; set; }
+        //public Department Department { get; set; }
+
+        public string DepartmentName { get; set; } = string.Empty;
 
         public User Leader { get; set; }
 

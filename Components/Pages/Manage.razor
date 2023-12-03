@@ -33,24 +33,7 @@ else
                     <li>@team.Leader.FirstName</li>
                     <li>@team.Leader.LastName</li>
                     <li>@team.Leader.Email</li>
-                </ul>
-                <h6>Department</h6>
-                <ul>
-                    <li>@team.Department.Name</li>
-                    <li>
-                        Director:
-                        <ul>
-                            <li>
-                                @team.Department.Director.FirstName
-                            </li>
-                            <li>
-                                @team.Department.Director.LastName
-                            </li>
-                            <li>
-                                @team.Department.Director.Email
-                            </li>
-                        </ul>
-                    </li>
+                    <li>@team.DepartmentName</li>
                 </ul>
                 <h6>Members</h6>
                 @if (team.Members != null)
