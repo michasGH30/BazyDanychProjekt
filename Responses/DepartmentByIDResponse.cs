@@ -6,6 +6,6 @@ namespace bazyProjektBlazor.Responses
     {
         public Department Department { get; set; }
 
-        public IEnumerable<Team>? Teams { get; set; }
+        public List<Team>? Teams { get; set; }
     }
 }

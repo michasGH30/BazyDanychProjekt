@@ -1,0 +1,23 @@
+﻿<div style="border:1px solid blue">
+    <h5><b>Team Name: </b>@team.Name</h5>
+    <p><b>Department Name: </b>@team.DepartmentName</p>
+    <h6>Leader</h6>
+    <UserComponent user="@team.Leader" />
+    <h6>Members</h6>
+    @if (team.Members != null)
+    {
+        @foreach (User member in team.Members)
+        {
+            <UserComponent user="member"/>
+        }
+    }
+    else
+    {
+        <p>This team has no members.</p>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public Team team { get; set; }
+}

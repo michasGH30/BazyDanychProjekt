@@ -1,0 +1,11 @@
+﻿<div style="border:1px solid green">
+    <p>User info:</p>
+        <p><b>First Name: </b>@user.FirstName</p>
+        <p><b>Last Name: </b>@user.LastName </p>
+        <p><b>Email: </b>@user.Email</p>
+</div>
+
+@code {
+    [Parameter]
+    public User user { get; set; }
+}

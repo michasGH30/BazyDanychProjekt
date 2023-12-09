@@ -11,6 +11,7 @@ namespace bazyProjektBlazor.Services
         public Task<Team> GetMyTeam();
 
         public Task<Team> GetTeamByID(int id);
+
     }
     public class TeamsService(IConfiguration configuration, ICurrentUser currentUser, IUsersService usersService) : ITeamsService
     {
@@ -21,8 +22,7 @@ namespace bazyProjektBlazor.Services
             connection.Open();
 
             using var command = new MySqlCommand(
-                "SELECT teams.ID" +
-                "FROM teams", connection);
+                "SELECT ID FROM teams", connection);
 
             MySqlDataReader reader = command.ExecuteReader();
 
@@ -68,12 +68,13 @@ namespace bazyProjektBlazor.Services
 
             using var command = new MySqlCommand(
                 "SELECT teams.ID, teams.name, " +
-                "users.ID " +
-                "departments.name" +
+                "users.ID, " +
+                "departments.name " +
                 "FROM teams " +
                 "INNER JOIN users on teams.leaderID = users.ID " +
-                "INNER JOIN departments on teams.departmentID = departments.ID" +
-                "WHERE teams.ID=@ID", connection);
+                "INNER JOIN departments on teams.departmentID = departments.ID " +
+                "WHERE teams.ID=@ID"
+                , connection);
 
             command.Parameters.AddWithValue("@ID", id);
 

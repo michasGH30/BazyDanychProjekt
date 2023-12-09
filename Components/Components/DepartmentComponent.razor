@@ -1,0 +1,22 @@
+﻿<div style="border:1px solid black">
+    <h2><b>Depatment Name: </b>@department.Department.Name</h2>
+    <h3>Director</h3>
+    <UserComponent user="@department.Department.Director"/>
+    @if (department.Teams != null)
+    {
+        <h4>Teams</h4>
+        @foreach (Team team in department.Teams)
+        {
+            <TeamComponent team="team" />
+        }
+    }
+    else
+    {
+        <p>This department has no teams.</p>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public DepartmentByIDResponse department { get; set; }
+}

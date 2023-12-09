@@ -2,7 +2,9 @@
 @inject NavigationManager navigationManager
 @inject ILoginService loginService
 @inject IProfileService profileService
+@inject IDepartmentService departmentsService
 @inject ITeamsService teamsService
+@inject IUsersService userService
 <PageTitle>Manage</PageTitle>
 <h3>Manage</h3>
 
@@ -12,57 +14,129 @@
 }
 else
 {
+    <!-- all users view -->
     if (profileResponse == null)
     {
         <p>Loading profile...</p>
     }
     else
     {
+        <h1>Your profile</h1>
         <p>@profileResponse.FirstName</p>
         <p>@profileResponse.LastName</p>
         <p>@profileResponse.Email</p>
     }
-    if (allTeams != null)
+    <!-- admin view -->
+    if(roles.Contains("admin"))
     {
-        foreach (Team team in allTeams)
-        {
-            <div>
-                <h5>@team.Name</h5>
-                <h6>Leader</h6>
-                <ul>
-                    <li>@team.Leader.FirstName</li>
-                    <li>@team.Leader.LastName</li>
-                    <li>@team.Leader.Email</li>
-                    <li>@team.DepartmentName</li>
-                </ul>
-                <h6>Members</h6>
-                @if (team.Members != null)
-                {
-                    <ul>
-                        @foreach (User member in team.Members)
+        <Tabs>
+            <Tab Title="All Departments" IsActive="true">
+                <Content>
+                    @if (allDepartments != null)
+                    {
+                        <h1>All Departments</h1>
+                        @if (allDepartments.Count > 0)
                         {
-                            <li>
-                                Member info:
-                                <ul>
-                                    <li>@member.FirstName</li>
-                                    <li>@member.LastName</li>
-                                    <li>@member.Email</li>
-                                </ul>
-                            </li>
+                            foreach (var department in allDepartments)
+                            {
+                                <DepartmentComponent department="department" />
+                            }
                         }
-                    </ul>
-                }
-                else
-                {
-                    <p>This team has no members</p>
-                }
-            </div>
-        }
+                        else
+                        {
+                            <p>No departments in database.</p>
+                        }
+                    }
+                    else
+                    {
+                        <p>Some error with all departments.</p>
+                    }
+                </Content>
+            </Tab>
+            <Tab Title="All Teams">
+                <Content>
+                    @if(allTeams != null)
+                    {
+                        <h1>All Teams</h1>
+                        @if (allTeams.Count > 0)
+                        {
+                            foreach (Team team in allTeams)
+                            {
+                                <TeamComponent team="team" />
+                            }
 
+                        }
+                        else
+                        {
+                            <p>No teams in database.</p>
+                        }
+                    }
+                    else
+                    {
+                        <p>Some error with all teams.</p>
+                    }
+                </Content>
+            </Tab>
+            <Tab Title="All Users">
+                <Content>
+                    @if(allUsers != null)
+                    {
+                        <h1>All users</h1>
+                        @if (allUsers.Count > 0)
+                        {
+                            foreach (User user in allUsers)
+                            {
+                                <UserComponent user="user" />
+                            }
+
+                        }
+                        else
+                        {
+                            <p>No users in database.</p>
+                        }
+                    }
+                    else
+                    {
+                        <p>Some error with all users.</p>
+                    }
+                </Content>
+            </Tab>
+            <Tab Title="Free Users">
+                <Content>
+                    @if(freeUsers != null)
+                    {
+                        <h1>Free users</h1>
+                        @if (freeUsers.Count > 0)
+                        {
+                            foreach (User user in freeUsers)
+                            {
+                                <UserComponent user="user" />
+                            }
+                        }
+                        else
+                        {
+                            <p>No free users in database.</p>
+                        }
+                    }
+                    else
+                    {
+                        <p>Some error with free users.</p>
+                    }
+                </Content>
+            </Tab>
+        </Tabs>
     }
-    else
+    <!-- director view -->
+    if(directorMyDepartment != null && roles.Contains("director"))
     {
-        <p>No teams in database</p>
+        <h1>My department</h1>
+        <DepartmentComponent department="directorMyDepartment"/>
+    }
+    <!-- leader view -->
+    if(leaderMyTeam != null && roles.Contains("leader"))
+    {
+        <h1>My team</h1>
+        <TeamComponent team="leaderMyTeam"/>
     }
 
 }
@@ -71,14 +145,14 @@ else
     bool isLogged = false;
 
     ProfileResponse? profileResponse;
-    string[]? roles;
+    string[] roles;
     List<Team>? allTeams;
+    List<DepartmentByIDResponse>? allDepartments;
+    List<User>? allUsers;
+    List<User>? freeUsers;
+    DepartmentByIDResponse directorMyDepartment;
+    Team leaderMyTeam;
     // TODO profile change
-    // TODO switch in roles
-    // 1. Admin: my profile, departments, members of departments, teams, members of teams, users with no team or department
-    // 2. director: my profile, department,members of department ,teams, members of teams
-    // 3. leader: my profile, team, members of team
-    // 4. user: my profile
     protected override async Task OnInitializedAsync()
     {
         isLogged = await loginService.IsLogged();
@@ -97,17 +171,22 @@ else
 
             if (roles.Contains("admin"))
             {
-                // all departments, all teams and all users which aren't is any of team or department
+                // all departments, all teams and all users which aren't in any team or department
+                allDepartments = await departmentsService.GetAllDepartments();
                 allTeams = await teamsService.GetAllTeams();
-
+                allUsers = await userService.GetAllUsers();
+                freeUsers = await userService.GetFreeUsers();
             }
             if (roles.Contains("director"))
             {
                 // info about department and teams in department
+                directorMyDepartment = await departmentsService.GetMyDepartment();
             }
             if (roles.Contains("leader"))
             {
                 // info about team and users in team
+                leaderMyTeam = await teamsService.GetMyTeam();
+
             }
         }
     }

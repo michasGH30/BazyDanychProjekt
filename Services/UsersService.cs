@@ -8,6 +8,8 @@ namespace bazyProjektBlazor.Services
         public Task<List<User>> GetAllUsers();
 
         public Task<User> GetUserById(int id);
+
+        public Task<List<User>> GetFreeUsers();
     }
     public class UsersService(IConfiguration configuration) : IUsersService
     {
@@ -29,6 +31,27 @@ namespace bazyProjektBlazor.Services
             }
 
             connection.Close();
+
+            return await Task.FromResult(users);
+        }
+
+        public async Task<List<User>> GetFreeUsers()
+        {
+            List<User> users = [];
+
+            using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+
+            connection.Open();
+
+            using var command = new MySqlCommand("SELECT ID FROM users WHERE ID NOT IN (SELECT memberID FROM teamsmembers) AND ID NOT IN (SELECT leaderID FROM teams) and ID NOT IN (SELECT directorID FROM departments) AND isAdmin = false", connection);
+
+            MySqlDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                var resposne = await GetUserById(reader.GetInt32("ID"));
+                users.Add(resposne);
+            }
 
             return await Task.FromResult(users);
         }
