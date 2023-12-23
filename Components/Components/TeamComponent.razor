@@ -1,21 +1,26 @@
-﻿<div style="border:1px solid blue">
-    <h5><b>Team Name: </b>@team.Name</h5>
-    <p><b>Department Name: </b>@team.DepartmentName</p>
-    <h6>Leader</h6>
-    <UserComponent user="@team.Leader" />
-    <h6>Members</h6>
-    @if (team.Members != null)
-    {
-        @foreach (User member in team.Members)
+﻿<Card>
+    <CardTitle>
+        <p>Team</p>
+    </CardTitle>
+    <CardBody>
+        <p><b>Team Name: </b>@team.Name</p>
+        <p><b>Department Name: </b>@team.DepartmentName</p>
+        <h2>Leader</h2>
+        <UserComponent user="@team.Leader" typeOfUser="Leader"/>
+        <h2>Members</h2>
+        @if (team.Members != null)
         {
-            <UserComponent user="member"/>
+            @foreach (User member in team.Members)
+            {
+                <UserComponent user="member" typeOfUser="Member of Team"/>
+            }
         }
-    }
-    else
-    {
-        <p>This team has no members.</p>
-    }
-</div>
+        else
+        {
+            <p>This team has no members.</p>
+        }
+    </CardBody>
+</Card>
 
 @code {
     [Parameter]

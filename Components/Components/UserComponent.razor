@@ -1,11 +1,19 @@
-﻿<div style="border:1px solid green">
-    <p>User info:</p>
-        <p><b>First Name: </b>@user.FirstName</p>
-        <p><b>Last Name: </b>@user.LastName </p>
+﻿<Card>
+    @if(typeOfUser.CompareTo("null") != 0)
+    {
+        <CardTitle>
+            <p>@typeOfUser</p>
+        </CardTitle>
+    }
+    <CardBody>
+        <p><b>User: </b>@user.FirstName @user.FirstName</p>
         <p><b>Email: </b>@user.Email</p>
-</div>
+    </CardBody>
+</Card>
 
 @code {
     [Parameter]
     public User user { get; set; }
+    [Parameter]
+    public string typeOfUser { get; set; } = string.Empty;
 }

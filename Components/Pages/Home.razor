@@ -1,7 +1,7 @@
 ﻿@page "/"
 @inject NavigationManager navigationManager
 @inject ILoginService loginService
-@attribute [StreamRendering(true)]
+@inject IMeetingsService meetingService
 
 <PageTitle>Home</PageTitle>
 <h3>Home</h3>
@@ -12,15 +12,30 @@
 }
 else
 {
-    <h1>Hello, world!</h1>
-
-    <p>Welcome to your new app.</p>
+    <!-- all users receive summary of meetings of which they are creators or members -->
+    if(meetingSummaries != null)
+    {
+        foreach(MeetingSummaryResponse response in meetingSummaries)
+        {
+            <MeetingSummaryComponent meetingSummary="@response" />
+        }
+    }
+    else
+    {
+        <p>You don't have any meetings :(</p>
+    }
 }
 
 
 @code
 {
     bool isLogged = false;
+
+    string[] roles;
+
+    List<Meeting>? myMeetingsCreator;
+    List<Meeting>? myMeetingsMember;
+    List<MeetingSummaryResponse> meetingSummaries;
 
     protected override async Task OnInitializedAsync()
     {
@@ -29,6 +44,43 @@ else
         {
             navigationManager.NavigateTo("/login");
         }
+        else
+        {
+            var response = await loginService.GetRoles();
+            roles = response.Split(",");
+
+            meetingSummaries = await meetingService.GetMeetingSummaries();
+
+            myMeetingsCreator = await meetingService.GetMyMeetingsCreator();
+            myMeetingsMember = await meetingService.GetMyMeetingsMember();
+
+            if(roles.Contains("admin"))
+            {
+                
+            }
+        }
     }
    
+
+//     if(myMeetingsCreator == null || myMeetingsMember == null)
+//     {
+//     <p>Loading your meetings</p>
+//     }
+//     else
+//     {
+//     if(myMeetingsCreator != null)
+//     {
+//         foreach(Meeting meeting in myMeetingsCreator)
+//         {
+//     <MeetingComponent meeting="meeting" />
+//         }
+// }
+// if (myMeetingsMember != null)
+// {
+//     foreach (Meeting meeting in myMeetingsMember)
+//     {
+//     <MeetingComponent meeting="meeting" />
+//     }
+// }
+//     }
 }

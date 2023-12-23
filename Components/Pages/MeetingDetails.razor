@@ -1,0 +1,41 @@
+﻿@page "/meeting/{messageId:int}"
+@inject ILoginService loginService
+@inject NavigationManager navigationManager
+@inject IMeetingsService meetingService
+<PageTitle>Meeting Details</PageTitle>
+<h3>Meeting Details</h3>
+
+@if(!isLogged)
+{
+    <p>Loading ...</p>
+}
+else
+{
+    if(meeting != null)
+    {
+        <MeetingComponent meeting="@meeting"/>
+    }
+    else
+    {
+        <p>Some issue with meeting</p>
+    }
+}
+
+@code {
+    [Parameter]
+    public int messageID { get; set; }
+    bool isLogged = false;
+    Meeting meeting;
+    protected override async Task OnInitializedAsync()
+    {
+        isLogged = await loginService.IsLogged();
+        if (!isLogged)
+        {
+            navigationManager.NavigateTo("/login");
+        }
+        else
+        {
+            meeting = await meetingService.GetMeetingByID(messageID);
+        }
+    }
+}

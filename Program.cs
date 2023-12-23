@@ -21,7 +21,7 @@ builder.Services.AddScoped<ITeamsService, TeamsService>();
 
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 
-builder.Services.AddControllers();
+builder.Services.AddScoped<IMeetingsService, MeetingsService>();
 
 builder.Services.AddBlazorBootstrap();
 
@@ -42,6 +42,6 @@ app.UseAntiforgery();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-app.MapControllers();
+app.UseStatusCodePagesWithRedirects("/Error");
 
 app.Run();

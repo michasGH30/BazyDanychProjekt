@@ -3,21 +3,28 @@
 @inject NavigationManager navigationManager
 
 <PageTitle>Login</PageTitle>
-
-<h3>Login</h3>
-
-<EditForm Model="loginModel" FormName="LoginForm" OnValidSubmit="OnValidSubmit">
-	<DataAnnotationsValidator />
-	<ValidationSummary />
-	<div class="mb-2">
-		<InputText id="email" @bind-Value="loginModel.Email" placeholder="Enter Email" type="email"></InputText>
+<div class="container-fluid">
+	<div class="row">
+		<h3>Login</h3>
 	</div>
-	<div class="mb-2">
-		<InputText id="password" @bind-Value="loginModel.Password" placeholder="Enter Password" type="password"></InputText>
-	</div>
-	<button>SUBMIT</button>
-</EditForm>
+	<div class="row">
+		<div class="col-md-3">
+			<EditForm Model="loginModel" FormName="LoginForm" OnValidSubmit="OnValidSubmit">
+				<DataAnnotationsValidator />
+				<ValidationSummary />
+				<div class="form-group">
+					<InputText id="email" @bind-Value="loginModel.Email" placeholder="Enter Email" type="email" class="form-control"></InputText>
 
+				</div>
+				<div class="form-group">
+					<InputText id="password" @bind-Value="loginModel.Password" placeholder="Enter Password" type="password" class="form-control"></InputText>
+
+				</div>
+				<button class="btn btn-primary">SUBMIT</button>
+			</EditForm>
+		</div>
+	</div>
+</div>
 
 @code {
 
@@ -36,7 +43,7 @@
 		{
 			loginModel.Email = "";
 			loginModel.Password = "";
-			ToastService.Notify(new(ToastType.Danger, $"Wystąpił błąd z logowaniem, spróbuj ponownie później"));
+			ToastService.Notify(new(ToastType.Danger, $"There was an error with logging in, try again later"));
 		}
 	}
 }

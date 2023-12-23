@@ -1,0 +1,72 @@
+﻿@inject NavigationManager navigationManager
+@inject IMeetingsService meetingService
+<ConfirmDialog @ref="dialog" />
+<Card Style="@style">
+    <CardBody>
+        <p><b>Title: </b>@meetingSummary.Title</p>
+        <p><b>Date: </b>@meetingSummary.Date</p>
+        @switch(meetingSummary.Status)
+        {
+            case "scheduled":
+            <Alert Color="AlertColor.Success">@meetingSummary.Status.ToUpperInvariant()</Alert>
+            break;
+            case "rescheduled":
+                <Alert Color="AlertColor.Warning">@meetingSummary.Status.ToUpperInvariant()</Alert>
+                break;
+            case "cancelled":
+                <Alert Color="AlertColor.Danger">@meetingSummary.Status.ToUpperInvariant()</Alert>
+                break;
+        }
+        @if(meetingSummary.Creator)
+        {
+            <Button Color="ButtonColor.Warning">Modify</Button>
+            <Button Color="ButtonColor.Danger" @onclick="((args) => OnCLickDelete(args,meetingSummary.MessageID))">Delete</Button>
+        }
+        <Button Color="ButtonColor.Primary" @onclick="((args) => OnClickShowDetails(args,meetingSummary.MessageID))">See details</Button>
+    </CardBody>
+</Card>
+
+@code {
+    private ConfirmDialog dialog = default!;
+    [Parameter]
+    public MeetingSummaryResponse meetingSummary { get; set; }
+    [Inject]
+    protected ToastService toastService { get; set; }
+    string style = "";
+
+    protected void OnClickShowDetails(EventArgs args, int id)
+    {
+        navigationManager.NavigateTo($"/meeting/{id}");
+    }
+
+    protected async void OnCLickDelete(EventArgs args, int id)
+    {
+        var options = new ConfirmDialogOptions
+            {
+                YesButtonText = "OK",
+                YesButtonColor = ButtonColor.Success,
+                NoButtonText = "CANCEL",
+                NoButtonColor = ButtonColor.Danger
+            };
+
+        var confirmation = await dialog.ShowAsync(
+            title: "Are you sure you want to delete this meeting?",
+            message1: "Do you want to proceed?",
+        confirmDialogOptions: options);
+
+        if (confirmation)
+        {
+            bool success = await meetingService.DeleteMeetingByID(id);
+            if (success)
+            {
+                toastService.Notify(new(ToastType.Success, "Successfully deleted meeting"));
+                style = "display:none;";
+            }
+            else
+            {
+                toastService.Notify(new(ToastType.Danger, "Unsuccessfully deleted meeting"));
+            }
+        }
+        
+    }
+}

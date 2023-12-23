@@ -42,11 +42,11 @@
 		else if(response == 1)
 		{
 			registrationModel.Email = "";
-			ToastService.Notify(new(ToastType.Danger, $"Ten e-mail jest już zajęty"));
+			ToastService.Notify(new(ToastType.Danger, $"This email is already taken"));
 		}
 		else
 		{
-			ToastService.Notify(new(ToastType.Danger, $"Wystąpił błąd z rejestracją, spróbuj ponownie później"));
+			ToastService.Notify(new(ToastType.Danger, $"There was an error with registration, try again later"));
 		}
 	}
 }
