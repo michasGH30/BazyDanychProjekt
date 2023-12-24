@@ -1,21 +1,19 @@
-﻿using bazyProjektBlazor.Models;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace bazyProjektBlazor.Requests
 {
-    public class CreateMeetingRequest
-    {
-        public string Title { get; set; } = string.Empty;
+	public class CreateMeetingRequest
+	{
+		[Required(ErrorMessage = "Title is required.")]
+		public string Title { get; set; } = string.Empty;
 
-        public DateOnly Date { get; set; }
+		[Required(ErrorMessage = "Date of Meeting is required.")]
+		public DateOnly Date { get; set; }
 
-        public User Creator { get; set; }
+		public int TypeOfMeeting { get; set; }
 
-        public string TypeOfMeeting { get; set; } = string.Empty;
+		public int RepetitionOfMeeting { get; set; }
 
-        public string StatusOfMeeting { get; set; } = string.Empty;
-
-        public string RepetitionOfMeeting { get; set; } = string.Empty;
-
-        public List<User>? Members { get; set; }
-    }
+		public List<int>? MembersID { get; set; }
+	}
 }

@@ -1,0 +1,120 @@
+﻿@page "/meetingForm"
+@page "/meetingForm/{meetingID:int}"
+@inject ILoginService loginService
+@inject IMeetingsService meetingService
+@inject IUsersService usersService
+@inject NavigationManager navigationManager
+
+@if(!isLogged)
+{
+	<p>Loading ...</p>
+}
+else
+{
+	@if (meetingID.HasValue)
+	{
+		<PageTitle>Update Meeting</PageTitle>
+		<h3>Update Meeting</h3>
+
+	}
+	else
+	{
+		<PageTitle>Create New Meeting</PageTitle>
+		<div class="container-fluid">
+			<div class="row">
+				<h3>Create New Meeting</h3>
+			</div>
+			<div class="row">
+				<div class="col-md-3">
+					<EditForm Model="request" FormName="CreateMeeting" OnValidSubmit="OnValidSubmit">
+						<DataAnnotationsValidator />
+						<ValidationSummary />
+						<div class="form-group my-2">
+							<InputText id="name" @bind-Value="request.Title" placeholder="Title" type="text" class="form-control"></InputText>
+
+						</div>
+						<div class="form-group my-2">
+							<DateInput TValue="DateOnly" @bind-Value="request.Date" Placeholder="Date" Min="@minDate" Max="@maxDate" EnableMinMax="true" />
+						</div>
+						<div class="form-group my-2">
+							<InputSelect @bind-Value="request.RepetitionOfMeeting">
+								@foreach (TypesRepetitionOfMeeting r in repetitions)
+								{
+									<option value="@r.ID">@r.Name</option>
+								}
+							</InputSelect>
+						</div>
+						<div class="form-group my-2">
+							<InputSelect @bind-Value="request.TypeOfMeeting">
+								@foreach (TypesRepetitionOfMeeting r in types)
+								{
+									<option value="@r.ID">@r.Name</option>
+								}
+							</InputSelect>
+						</div>
+						<div class="form-group my-2">
+							@foreach (UserForm u in userForms)
+							{
+								<label>
+									@u.Name <InputCheckbox @bind-Value="u.IsSelected" />
+								</label><br />
+							}
+						</div>
+						<button class="btn btn-primary">SUBMIT</button>
+					</EditForm>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+
+
+
+@code {
+	[Parameter]
+	public int? meetingID { get; set; }
+	CreateMeetingRequest request = new();
+	private DateOnly minDate;
+	private DateOnly maxDate;
+	private List<TypesRepetitionOfMeeting> types;
+	private List<TypesRepetitionOfMeeting> repetitions;
+	private bool isLogged = false;
+	private List<User> users;
+	private List<UserForm> userForms = [];
+
+	protected override async Task OnInitializedAsync()
+	{
+		isLogged = await loginService.IsLogged();
+		if(!isLogged)
+		{
+			navigationManager.NavigateTo("/login");
+		}
+		else
+		{
+			minDate = DateOnly.FromDateTime(DateTime.Now);
+			maxDate = DateOnly.FromDateTime(DateTime.Now.AddYears(1));
+			types = await meetingService.GetTypesOfMeeting();
+			repetitions = await meetingService.GetRepetitionOfMeeting();
+			users = await usersService.GetAllUsers();
+			userForms = users.Select(user => new UserForm(user)).ToList();
+		}
+
+	}
+
+	private async Task OnValidSubmit()
+	{
+		request.MembersID = userForms.Where(u => u.IsSelected).Select(u => u.ID).ToList();
+		// var response = await loginService.Login(loginModel);
+		// if (response)
+		// {
+		// 	navigationManager.NavigateTo("/");
+		// }
+		// else
+		// {
+		// 	loginModel.Email = "";
+		// 	loginModel.Password = "";
+		// 	ToastService.Notify(new(ToastType.Danger, $"There was an error with logging in, try again later"));
+		// }
+	}
+}

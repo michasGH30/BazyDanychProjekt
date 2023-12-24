@@ -12,11 +12,11 @@
 			<EditForm Model="loginModel" FormName="LoginForm" OnValidSubmit="OnValidSubmit">
 				<DataAnnotationsValidator />
 				<ValidationSummary />
-				<div class="form-group">
+				<div class="form-group my-2">
 					<InputText id="email" @bind-Value="loginModel.Email" placeholder="Enter Email" type="email" class="form-control"></InputText>
 
 				</div>
-				<div class="form-group">
+				<div class="form-group my-2">
 					<InputText id="password" @bind-Value="loginModel.Password" placeholder="Enter Password" type="password" class="form-control"></InputText>
 
 				</div>
