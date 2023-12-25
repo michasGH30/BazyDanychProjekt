@@ -14,62 +14,80 @@ else
 	@if (meetingID.HasValue)
 	{
 		<PageTitle>Update Meeting</PageTitle>
-		<h3>Update Meeting</h3>
-
 	}
 	else
 	{
 		<PageTitle>Create New Meeting</PageTitle>
-		<div class="container-fluid">
-			<div class="row">
-				<h3>Create New Meeting</h3>
-			</div>
-			<div class="row">
-				<div class="col-md-3">
-					<EditForm Model="request" FormName="CreateMeeting" OnValidSubmit="OnValidSubmit">
-						<DataAnnotationsValidator />
-						<ValidationSummary />
-						<div class="form-group my-2">
-							<InputText id="name" @bind-Value="request.Title" placeholder="Title" type="text" class="form-control"></InputText>
 
-						</div>
-						<div class="form-group my-2">
-							<DateInput TValue="DateOnly" @bind-Value="request.Date" Placeholder="Date" Min="@minDate" Max="@maxDate" EnableMinMax="true" />
-						</div>
-						<div class="form-group my-2">
-							<InputSelect @bind-Value="request.RepetitionOfMeeting">
-								@foreach (TypesRepetitionOfMeeting r in repetitions)
-								{
-									<option value="@r.ID">@r.Name</option>
-								}
-							</InputSelect>
-						</div>
-						<div class="form-group my-2">
-							<InputSelect @bind-Value="request.TypeOfMeeting">
-								@foreach (TypesRepetitionOfMeeting r in types)
-								{
-									<option value="@r.ID">@r.Name</option>
-								}
-							</InputSelect>
-						</div>
-						<div class="form-group my-2">
-							@foreach (UserForm u in userForms)
+	}
+	<div class="container-fluid">
+		<div class="row">
+			@if (meetingID.HasValue)
+			{
+				<h3>Update Meeting</h3>
+			}
+			else
+			{
+				<h3>Create New Meeting</h3>
+
+			}
+		</div>
+		<div class="row">
+			<div class="col-md-3">
+				<EditForm Model="request" FormName="CreateMeeting" OnValidSubmit="OnValidSubmit">
+					<DataAnnotationsValidator />
+					<ValidationSummary />
+					<div class="form-group my-2">
+						<InputText id="name" @bind-Value="request.Title" placeholder="Title" type="text" class="form-control"></InputText>
+
+					</div>
+					<div class="form-group my-2">
+						<DateInput TValue="DateOnly" @bind-Value="request.Date" Placeholder="Date" Min="@minDate" Max="@maxDate" EnableMinMax="true" />
+					</div>
+					<div class="form-group my-2">
+						<InputSelect @bind-Value="request.RepetitionOfMeeting">
+							@foreach (TypeStatusRepetitionOfMeeting r in repetitions)
 							{
-								<label>
-									@u.Name <InputCheckbox @bind-Value="u.IsSelected" />
-								</label><br />
+								<option value="@r.ID">@r.Name</option>
 							}
+						</InputSelect>
+					</div>
+					<div class="form-group my-2">
+						<InputSelect @bind-Value="request.TypeOfMeeting">
+							@foreach (TypeStatusRepetitionOfMeeting t in types)
+							{
+								<option value="@t.ID">@t.Name</option>
+							}
+						</InputSelect>
+					</div>
+					@if(meetingID.HasValue)
+					{
+						<div class="form-group my-2">
+							<InputSelect @bind-Value="request.StatusOfMeeting">
+								@foreach (TypeStatusRepetitionOfMeeting s in statuses)
+								{
+									<option value="@s.ID">@s.Name</option>
+								}
+							</InputSelect>
 						</div>
-						<button class="btn btn-primary">SUBMIT</button>
-					</EditForm>
-				</div>
+					}
+					<div class="form-group my-2">
+						@foreach (UserForm u in userForms)
+						{
+							<label>
+								@u.Name <InputCheckbox @bind-Value="u.IsSelected" />
+							</label>
+
+							<br />
+						}
+					</div>
+					<button class="btn btn-primary">SUBMIT</button>
+				</EditForm>
 			</div>
 		</div>
-	}
+	</div>
+	
 }
-
-
-
 
 @code {
 	[Parameter]
@@ -77,11 +95,15 @@ else
 	CreateMeetingRequest request = new();
 	private DateOnly minDate;
 	private DateOnly maxDate;
-	private List<TypesRepetitionOfMeeting> types;
-	private List<TypesRepetitionOfMeeting> repetitions;
+	private List<TypeStatusRepetitionOfMeeting> types;
+	private List<TypeStatusRepetitionOfMeeting> repetitions;
+	private List<TypeStatusRepetitionOfMeeting> statuses;
 	private bool isLogged = false;
 	private List<User> users;
 	private List<UserForm> userForms = [];
+	[Inject]
+	public ToastService toastService { get; set; }
+	private Meeting meeting;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -92,12 +114,51 @@ else
 		}
 		else
 		{
-			minDate = DateOnly.FromDateTime(DateTime.Now);
+			minDate = DateOnly.FromDateTime(DateTime.Now.AddYears(-1));
 			maxDate = DateOnly.FromDateTime(DateTime.Now.AddYears(1));
 			types = await meetingService.GetTypesOfMeeting();
 			repetitions = await meetingService.GetRepetitionOfMeeting();
 			users = await usersService.GetAllUsers();
 			userForms = users.Select(user => new UserForm(user)).ToList();
+			if(meetingID.HasValue)
+			{
+				statuses = await meetingService.GetStatusesOfMeeting();
+				meeting = await meetingService.GetMeetingByID(meetingID.Value);
+				request.ID = meetingID.Value;
+				request.Title = meeting.Title;
+				request.Date = meeting.Date;
+				foreach (var rep in repetitions)
+				{
+					if(rep.Name.Equals(meeting.RepetitionOfMeeting))
+					{
+						request.RepetitionOfMeeting = rep.ID;
+					}
+				}
+				foreach(var type in types)
+				{
+					if(type.Name.Equals(meeting.TypeOfMeeting))
+					{
+						request.TypeOfMeeting = type.ID;
+					}
+				}
+				foreach(var status in statuses)
+				{
+					if(status.Name.Equals(meeting.StatusOfMeeting))
+					{
+						request.StatusOfMeeting = status.ID;
+					}
+				}
+				foreach(UserForm userForm in userForms)
+				{
+					foreach(User user in meeting.Members)
+					{
+						if(userForm.ID == user.ID)
+						{
+							userForm.IsSelected = true;
+						}
+					}
+				}
+			}
 		}
 
 	}
@@ -105,16 +166,42 @@ else
 	private async Task OnValidSubmit()
 	{
 		request.MembersID = userForms.Where(u => u.IsSelected).Select(u => u.ID).ToList();
-		// var response = await loginService.Login(loginModel);
-		// if (response)
-		// {
-		// 	navigationManager.NavigateTo("/");
-		// }
-		// else
-		// {
-		// 	loginModel.Email = "";
-		// 	loginModel.Password = "";
-		// 	ToastService.Notify(new(ToastType.Danger, $"There was an error with logging in, try again later"));
-		// }
+
+		if(meetingID.HasValue)
+		{
+			var response = await meetingService.UpdateMeeting(request);
+
+			if(response)
+			{
+				toastService.Notify(new(ToastType.Success, "Successfully updated meeting"));
+				navigationManager.NavigateTo("/");
+			}
+			else
+			{
+				toastService.Notify(new(ToastType.Danger, "There was error with updating of meeting try again later"));
+			}
+		}
+		else
+		{
+			var response = await meetingService.CreateMeeting(request);
+
+			if (response)
+			{
+				toastService.Notify(new(ToastType.Success, "Successfully added new meeting"));
+				navigationManager.NavigateTo("/");
+			}
+			else
+			{
+				toastService.Notify(new(ToastType.Danger, "There was error with creating of meeting try again later"));
+				request.Title = "";
+				request.Date = default;
+				request.RepetitionOfMeeting = 0;
+				request.TypeOfMeeting = 0;
+				request.MembersID = [];
+				userForms.ForEach(u => u.IsSelected = false);
+			}
+		}
+
+		
 	}
 }

@@ -1,23 +1,42 @@
 ﻿<Card>
-    <CardTitle>
-        <p>Meeting</p>
-    </CardTitle>
     <CardBody>
         <p><b>Title:</b> @meeting.Title</p>
         <p><b>Date:</b> @meeting.Date</p>
+        <p><b>Type:</b> @StringOperations.Capitalise(meeting.TypeOfMeeting)</p>
+        <p><b>Repetition:</b> @StringOperations.Capitalise(meeting.RepetitionOfMeeting)</p>
+        @switch (meeting.StatusOfMeeting)
+        {
+            case "scheduled":
+                <Alert Color="AlertColor.Success">@StringOperations.Capitalise(meeting.StatusOfMeeting)</Alert>
+                break;
+            case "rescheduled":
+                <Alert Color="AlertColor.Warning">@StringOperations.Capitalise(meeting.StatusOfMeeting)</Alert>
+                break;
+            case "cancelled":
+                <Alert Color="AlertColor.Danger">@StringOperations.Capitalise(meeting.StatusOfMeeting)</Alert>
+                break;
+        }
         <h2>Creator</h2>
         <UserComponent user="@meeting.Creator" typeOfUser="Creator" />
-        @if (meeting.Members != null)
+        <h2>Members</h2>
+        @if (meeting.Members.Count >0)
         {
-            <h2>Members</h2>
             foreach (User user in meeting.Members)
             {
                 <UserComponent user="user" typeOfUser="Member Of Meeting" />
             }
         }
-        @if (meeting.Messages != null)
+        else
         {
-            <h2>Messages</h2>
+            <Card>
+                <CardBody>
+                    <p>This meeting has no members</p>
+                </CardBody>
+            </Card>
+        }
+        <h2>Messages</h2>
+        @if (meeting.Messages.Count > 0)
+        {
             foreach (MeetingMessage message in meeting.Messages)
             {
                 <Card>
@@ -26,12 +45,20 @@
                         <UserComponent user="message.Sender" typeOfUser="Message Sender" />
                     </CardBody>
                 </Card>
-                
+
             }
         }
-        @if (meeting.Attachments != null)
+        else
         {
-            <h2>Attachments</h2>
+            <Card>
+                <CardBody>
+                    <p>This meeting has no messages</p>
+                </CardBody>
+            </Card>
+        }
+        <h2>Attachments</h2>
+        @if (meeting.Attachments.Count > 0)
+        {
             foreach (MeetingAttachment attachment in meeting.Attachments)
             {
                 <Card>
@@ -41,8 +68,16 @@
                         <UserComponent user="attachment.Sender" typeOfUser="Attachment Sender" />
                     </CardBody>
                 </Card>
-                
+
             }
+        }
+        else
+        {
+            <Card>
+                <CardBody>
+                    <p>This meeting has no attachments</p>
+                </CardBody>
+            </Card>
         }
     </CardBody>
 </Card>

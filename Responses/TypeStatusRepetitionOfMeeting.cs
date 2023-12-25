@@ -1,6 +1,6 @@
 ﻿namespace bazyProjektBlazor.Responses
 {
-	public class TypesRepetitionOfMeeting
+	public class TypeStatusRepetitionOfMeeting
 	{
 		public int ID { get; set; }
 

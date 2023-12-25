@@ -16,11 +16,11 @@
 
         public string RepetitionOfMeeting { get; set; } = string.Empty;
 
-        public List<User>? Members { get; set; }
+        public List<User> Members { get; set; }
 
-        public List<MeetingMessage>? Messages { get; set; }
+        public List<MeetingMessage> Messages { get; set; }
 
-        public List<MeetingAttachment>? Attachments { get; set; }
+        public List<MeetingAttachment> Attachments { get; set; }
 
     }
 }

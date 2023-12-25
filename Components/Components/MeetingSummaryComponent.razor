@@ -1,28 +1,28 @@
 ﻿@inject NavigationManager navigationManager
 @inject IMeetingsService meetingService
 <ConfirmDialog @ref="dialog" />
-<Card Style="@style">
+<Card Style="@style" Class="col-4">
     <CardBody>
         <p><b>Title: </b>@meetingSummary.Title</p>
         <p><b>Date: </b>@meetingSummary.Date</p>
         @switch(meetingSummary.Status)
         {
             case "scheduled":
-            <Alert Color="AlertColor.Success">@meetingSummary.Status.ToUpperInvariant()</Alert>
+            <Alert Color="AlertColor.Success">@StringOperations.Capitalise(meetingSummary.Status)</Alert>
             break;
             case "rescheduled":
-                <Alert Color="AlertColor.Warning">@meetingSummary.Status.ToUpperInvariant()</Alert>
+                <Alert Color="AlertColor.Warning">@StringOperations.Capitalise(meetingSummary.Status)</Alert>
                 break;
             case "cancelled":
-                <Alert Color="AlertColor.Danger">@meetingSummary.Status.ToUpperInvariant()</Alert>
+                <Alert Color="AlertColor.Danger">@StringOperations.Capitalise(meetingSummary.Status)</Alert>
                 break;
         }
         @if(meetingSummary.Creator)
         {
-            <Button Color="ButtonColor.Warning">Modify</Button>
-            <Button Color="ButtonColor.Danger" @onclick="((args) => OnCLickDelete(args,meetingSummary.MessageID))">Delete</Button>
+            <Button Color="ButtonColor.Warning" @onclick="((args) => OnClickUpdate(args,meetingSummary.MeetingID))" Class="mx-1">Modify</Button>
+            <Button Color="ButtonColor.Danger" @onclick="((args) => OnCLickDelete(args,meetingSummary.MeetingID))" Class="mx-1">Delete</Button>
         }
-        <Button Color="ButtonColor.Primary" @onclick="((args) => OnClickShowDetails(args,meetingSummary.MessageID))">See details</Button>
+        <Button Color="ButtonColor.Primary" @onclick="((args) => OnClickShowDetails(args,meetingSummary.MeetingID))" Class="mx-1">See details</Button>
     </CardBody>
 </Card>
 
@@ -37,6 +37,11 @@
     protected void OnClickShowDetails(EventArgs args, int id)
     {
         navigationManager.NavigateTo($"/meeting/{id}");
+    }
+
+    protected void OnClickUpdate(EventArgs args, int id)
+    {
+        navigationManager.NavigateTo($"/meetingForm/{id}");
     }
 
     protected async void OnCLickDelete(EventArgs args, int id)
@@ -61,6 +66,7 @@
             {
                 toastService.Notify(new(ToastType.Success, "Successfully deleted meeting"));
                 style = "display:none;";
+                StateHasChanged();
             }
             else
             {

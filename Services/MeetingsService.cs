@@ -8,23 +8,29 @@ namespace bazyProjektBlazor.Services
 {
 	public interface IMeetingsService
 	{
-		public Task<List<Meeting>> GetAllMeetings();
+		public Task<List<MeetingSummaryResponse>> GetAllMeetingsSummaries();
 
-		public Task<List<Meeting>> GetMeetingsFromMyDepartment();
+		public Task<MeetingSummaryResponse> GetMeetingSummaryByID(int ID);
 
-		public Task<List<Meeting>> GetMeetingsFromMyTeam();
+		public Task<List<MeetingSummaryResponse>> GetMeetingsSummariesFromMyDepartment();
+
+		public Task<List<MeetingSummaryResponse>> GetMeetingsSummariesFromMyTeam();
 
 		public Task<Meeting> GetMeetingByID(int id);
 
 		public Task<bool> CreateMeeting(CreateMeetingRequest request);
 
-		public Task<List<MeetingSummaryResponse>> GetMeetingSummaries();
+		public Task<List<MeetingSummaryResponse>> GetMyMeetingSummaries();
 
 		public Task<bool> DeleteMeetingByID(int id);
 
-		public Task<List<TypesRepetitionOfMeeting>> GetRepetitionOfMeeting();
+		public Task<List<TypeStatusRepetitionOfMeeting>> GetRepetitionOfMeeting();
 
-		public Task<List<TypesRepetitionOfMeeting>> GetTypesOfMeeting();
+		public Task<List<TypeStatusRepetitionOfMeeting>> GetTypesOfMeeting();
+
+		public Task<List<TypeStatusRepetitionOfMeeting>> GetStatusesOfMeeting();
+
+		public Task<bool> UpdateMeeting(CreateMeetingRequest request);
 	}
 	public class MeetingsService(IConfiguration configuration, ICurrentUser currentUser, IUsersService usersService) : IMeetingsService
 	{
@@ -34,7 +40,7 @@ namespace bazyProjektBlazor.Services
 
 			connection.Open();
 
-			using var command = new MySqlCommand("INSERT INTO meetings(title, date, creatorID, typeID, statusID, repeatingID) VALUES ('@TITLE','@DATE','@CID','@TID','@SID','@RID')", connection);
+			using var command = new MySqlCommand("INSERT INTO meetings(title, date, creatorID, typeID, statusID, repeatingID) VALUES (@TITLE,@DATE,@CID,@TID,@SID,@RID)", connection);
 			command.Parameters.AddWithValue("@TITLE", request.Title);
 			command.Parameters.AddWithValue("@DATE", request.Date);
 			command.Parameters.AddWithValue("@CID", currentUser.ID);
@@ -44,7 +50,39 @@ namespace bazyProjektBlazor.Services
 
 			if (command.ExecuteNonQuery() > 0)
 			{
-				//command.LastInsertedId
+
+				if (request.MembersID.Count > 0)
+				{
+					var lastID = command.LastInsertedId;
+
+					string sql = "INSERT INTO meetingsmembers(meetingID,memberID) VALUES ";
+					for (int i = 0; i < request.MembersID.Count; i++)
+					{
+						if (i != request.MembersID.Count - 1)
+						{
+							sql += $"({lastID}, {request.MembersID.ElementAt(i)}), ";
+						}
+						else
+						{
+							sql += $"({lastID}, {request.MembersID.ElementAt(i)})";
+						}
+					}
+					using var membersConnetion = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+
+					membersConnetion.Open();
+
+					using var membersCommand = new MySqlCommand(sql, connection);
+
+					if (membersCommand.ExecuteNonQuery() > 0)
+					{
+						return await Task.FromResult(true);
+					}
+					else
+					{
+						return await Task.FromResult(false);
+					}
+				}
+
 				return await Task.FromResult(true);
 
 			}
@@ -74,9 +112,9 @@ namespace bazyProjektBlazor.Services
 			}
 		}
 
-		public async Task<List<Meeting>> GetAllMeetings()
+		public async Task<List<MeetingSummaryResponse>> GetAllMeetingsSummaries()
 		{
-			List<Meeting> response = [];
+			List<MeetingSummaryResponse> response = [];
 
 			using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
@@ -88,7 +126,7 @@ namespace bazyProjektBlazor.Services
 
 			while (reader.Read())
 			{
-				Meeting meeting = await GetMeetingByID(reader.GetInt32(0));
+				MeetingSummaryResponse meeting = await GetMeetingSummaryByID(reader.GetInt32(0));
 				response.Add(meeting);
 			}
 
@@ -185,49 +223,69 @@ namespace bazyProjektBlazor.Services
 			return await Task.FromResult(response);
 		}
 
-		public Task<List<Meeting>> GetMeetingsFromMyDepartment()
+		public Task<List<MeetingSummaryResponse>> GetMeetingsSummariesFromMyDepartment()
 		{
 			throw new NotImplementedException();
 		}
 
-		public Task<List<Meeting>> GetMeetingsFromMyTeam()
+		public Task<List<MeetingSummaryResponse>> GetMeetingsSummariesFromMyTeam()
 		{
 			throw new NotImplementedException();
 		}
 
-		public async Task<List<MeetingSummaryResponse>> GetMeetingSummaries()
+		public async Task<MeetingSummaryResponse> GetMeetingSummaryByID(int ID)
 		{
-			List<MeetingSummaryResponse> response = [];
-
-			int myID = currentUser.ID;
+			MeetingSummaryResponse response = new();
 
 			using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
 			connection.Open();
 
-			using var command = new MySqlCommand("SELECT meetings.ID, meetings.title, meetings.date, meetings.creatorID, statusofmeeting.status FROM meetings INNER JOIN statusofmeeting ON meetings.statusID = statusofmeeting.ID WHERE meetings.creatorID = @ID OR meetings.ID IN (SELECT meetingsmembers.meetingID FROM meetingsmembers WHERE meetingsmembers.memberID = @ID)", connection);
-			command.Parameters.AddWithValue("@ID", myID);
+			using var command = new MySqlCommand("SELECT meetings.ID, meetings.title, meetings.date, meetings.creatorID, statusofmeeting.status FROM meetings INNER JOIN statusofmeeting on meetings.statusID = statusofmeeting.ID WHERE meetings.ID=@ID", connection);
+			command.Parameters.AddWithValue("@ID", ID);
 
 			MySqlDataReader reader = command.ExecuteReader();
 
 			while (reader.Read())
 			{
-				response.Add(new()
+				response = new()
 				{
-					MessageID = reader.GetInt32(0),
+					MeetingID = reader.GetInt32(0),
 					Title = reader.GetString(1),
 					Date = reader.GetDateOnly(2),
-					Creator = reader.GetInt32(3) == myID,
+					Creator = reader.GetInt32(3) == currentUser.ID,
 					Status = reader.GetString(4)
-				});
+				};
 			}
 
 			return await Task.FromResult(response);
 		}
 
-		public async Task<List<TypesRepetitionOfMeeting>> GetRepetitionOfMeeting()
+		public async Task<List<MeetingSummaryResponse>> GetMyMeetingSummaries()
 		{
-			List<TypesRepetitionOfMeeting> response = [];
+			List<MeetingSummaryResponse> response = [];
+
+			using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+
+			connection.Open();
+
+			using var command = new MySqlCommand("SELECT meetings.ID FROM meetings INNER JOIN statusofmeeting ON meetings.statusID = statusofmeeting.ID WHERE meetings.creatorID = @ID OR meetings.ID IN (SELECT meetingsmembers.meetingID FROM meetingsmembers WHERE meetingsmembers.memberID = @ID)", connection);
+			command.Parameters.AddWithValue("@ID", currentUser.ID);
+
+			MySqlDataReader reader = command.ExecuteReader();
+
+			while (reader.Read())
+			{
+				MeetingSummaryResponse r = await GetMeetingSummaryByID(reader.GetInt32(0));
+				response.Add(r);
+			}
+
+			return await Task.FromResult(response);
+		}
+
+		public async Task<List<TypeStatusRepetitionOfMeeting>> GetRepetitionOfMeeting()
+		{
+			List<TypeStatusRepetitionOfMeeting> response = [];
 
 			using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
@@ -249,9 +307,33 @@ namespace bazyProjektBlazor.Services
 			return await Task.FromResult(response);
 		}
 
-		public async Task<List<TypesRepetitionOfMeeting>> GetTypesOfMeeting()
+		public async Task<List<TypeStatusRepetitionOfMeeting>> GetStatusesOfMeeting()
 		{
-			List<TypesRepetitionOfMeeting> response = [];
+			List<TypeStatusRepetitionOfMeeting> response = [];
+
+			using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+
+			connection.Open();
+
+			using var command = new MySqlCommand("SELECT statusofmeeting.ID, statusofmeeting.status FROM statusofmeeting", connection);
+
+			MySqlDataReader reader = await command.ExecuteReaderAsync();
+
+			while (await reader.ReadAsync())
+			{
+				response.Add(new()
+				{
+					ID = reader.GetInt32(0),
+					Name = reader.GetString(1)
+				});
+			}
+
+			return await Task.FromResult(response);
+		}
+
+		public async Task<List<TypeStatusRepetitionOfMeeting>> GetTypesOfMeeting()
+		{
+			List<TypeStatusRepetitionOfMeeting> response = [];
 
 			using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
@@ -271,6 +353,79 @@ namespace bazyProjektBlazor.Services
 			}
 
 			return await Task.FromResult(response);
+		}
+
+		public async Task<bool> UpdateMeeting(CreateMeetingRequest request)
+		{
+			using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+
+			connection.Open();
+
+			using var command = new MySqlCommand("UPDATE meetings SET title=@T, date=@D, typeID=@TID, statusID=@SID, repeatingID=@RID WHERE ID=@ID", connection);
+
+			command.Parameters.AddWithValue("@T", request.Title);
+			command.Parameters.AddWithValue("@D", request.Date);
+			command.Parameters.AddWithValue("@TID", request.TypeOfMeeting);
+			command.Parameters.AddWithValue("@SID", request.StatusOfMeeting);
+			command.Parameters.AddWithValue("@RID", request.RepetitionOfMeeting);
+			command.Parameters.AddWithValue("@ID", request.ID);
+
+			if (command.ExecuteNonQuery() > 0)
+			{
+				using var deleteConnection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+
+				deleteConnection.Open();
+
+				using var deleteCommand = new MySqlCommand("DELETE FROM meetingsmembers WHERE meetingID=@ID", deleteConnection);
+				deleteCommand.Parameters.AddWithValue("@ID", request.ID);
+				if (deleteCommand.ExecuteNonQuery() > 0)
+				{
+					if (request.MembersID.Count > 0)
+					{
+						using var insertConnection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+
+						insertConnection.Open();
+
+						string sql = "INSERT INTO meetingsmembers(meetingID,memberID) VALUES ";
+						for (int i = 0; i < request.MembersID.Count; i++)
+						{
+							if (i != request.MembersID.Count - 1)
+							{
+								sql += $"({request.ID}, {request.MembersID.ElementAt(i)}), ";
+							}
+							else
+							{
+								sql += $"({request.ID}, {request.MembersID.ElementAt(i)})";
+							}
+						}
+
+						using var insertCommand = new MySqlCommand(sql, insertConnection);
+
+						if (insertCommand.ExecuteNonQuery() > 0)
+						{
+							return await Task.FromResult(true);
+						}
+						else
+						{
+							return await Task.FromResult(false);
+						}
+					}
+
+					return await Task.FromResult(true);
+
+				}
+				else
+				{
+					return await Task.FromResult(false);
+				}
+
+			}
+			else
+			{
+				return await Task.FromResult(false);
+			}
+
+
 		}
 	}
 }

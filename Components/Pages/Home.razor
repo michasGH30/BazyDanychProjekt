@@ -14,8 +14,7 @@ else
 {
     <!-- all users receive summary of meetings of which they are creators or members -->
     <a href="/meetingForm">Create</a>
-    <a href="/meetingForm/1">Update</a>
-    if(meetingSummaries != null)
+    if(meetingSummaries.Count > 0)
     {
         foreach(MeetingSummaryResponse response in meetingSummaries)
         {
@@ -49,7 +48,7 @@ else
             var response = await loginService.GetRoles();
             roles = response.Split(",");
 
-            meetingSummaries = await meetingService.GetMeetingSummaries();
+            meetingSummaries = await meetingService.GetMyMeetingSummaries();
 
             if(roles.Contains("admin"))
             {

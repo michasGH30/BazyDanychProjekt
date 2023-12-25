@@ -4,16 +4,22 @@ namespace bazyProjektBlazor.Requests
 {
 	public class CreateMeetingRequest
 	{
+		public int ID { get; set; }
+
 		[Required(ErrorMessage = "Title is required.")]
 		public string Title { get; set; } = string.Empty;
 
-		[Required(ErrorMessage = "Date of Meeting is required.")]
 		public DateOnly Date { get; set; }
 
+		[Range(1, int.MaxValue, ErrorMessage = "Select correct type of meeting.")]
 		public int TypeOfMeeting { get; set; }
 
+		[Range(1, int.MaxValue, ErrorMessage = "Select correct repetition of meeting.")]
 		public int RepetitionOfMeeting { get; set; }
 
-		public List<int>? MembersID { get; set; }
+		public int StatusOfMeeting { get; set; } = 1;
+
+		public List<int> MembersID { get; set; }
+
 	}
 }

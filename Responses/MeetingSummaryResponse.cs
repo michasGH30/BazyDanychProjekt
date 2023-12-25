@@ -2,7 +2,7 @@
 {
     public class MeetingSummaryResponse
     {
-        public int MessageID { get; set; }
+        public int MeetingID { get; set; }
 
         public string Title { get; set; } = string.Empty;
 
