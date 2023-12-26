@@ -1,18 +1,19 @@
-﻿<Card>
+﻿<Card Class="my-2">
     <CardTitle>
         <p>Team</p>
     </CardTitle>
     <CardBody>
         <p><b>Team Name: </b>@team.Name</p>
         <p><b>Department Name: </b>@team.DepartmentName</p>
-        <h2>Leader</h2>
-        <UserComponent user="@team.Leader" typeOfUser="Leader"/>
-        <h2>Members</h2>
+        <h4>Leader</h4>
+        <UserComponent user="@team.Leader"/>
+        <hr class="hr" />
+        <h4>Members</h4>
         @if (team.Members != null)
         {
             @foreach (User member in team.Members)
             {
-                <UserComponent user="member" typeOfUser="Member of Team"/>
+                <UserComponent user="member"/>
             }
         }
         else

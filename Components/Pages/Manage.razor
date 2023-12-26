@@ -6,35 +6,55 @@
 @inject ITeamsService teamsService
 @inject IUsersService userService
 <PageTitle>Manage</PageTitle>
-<h3>Manage</h3>
-
-@if (!isLogged)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <!-- all users view -->
-    if (profileResponse == null)
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12 d-flex justify-content-center my-1">
+            <h1>Manage</h1>
+        </div>
+    </div>
+    
+    @if (!isLogged)
     {
-        <p>Loading profile...</p>
+        <div class="row">
+            <div class="col-12 d-flex justify-content-center my-1">
+                <p>Loading...</p>
+            </div>
+        </div>
+       
     }
     else
     {
-        <h1>Your profile</h1>
-        <p>@profileResponse.FirstName</p>
-        <p>@profileResponse.LastName</p>
-        <p>@profileResponse.Email</p>
-    }
-    <!-- admin view -->
-    if(roles.Contains("admin"))
-    {
-        <Tabs>
-            <Tab Title="All Departments" IsActive="true">
-                <Content>
+        <!-- all users view -->
+        <div class="row">
+            @if (profileResponse == null)
+            {
+                <div class="col-12 d-flex justify-content-center my-1">
+                    <p>Loading profile</p>
+                </div> 
+            }
+            else
+            {
+                <div class="col-12 d-flex justify-content-center my-1">
+                    <div>
+                        <h2>Your profile</h2>
+                        <p><b>First name: </b>@profileResponse.FirstName</p><br />
+                        <p><b>Last name: </b>@profileResponse.LastName</p><br />
+                        <p><b>Email: </b>@profileResponse.Email</p>
+                    </div>
+                    
+                </div>
+            
+            }
+        </div>
+        <!-- admin view -->
+        if (roles.Contains("admin"))
+        {
+            <hr class="hr"/>
+            <div class="row">
+                <div class="col-3">
                     @if (allDepartments != null)
                     {
-                        <h1>All Departments</h1>
+                        <h2>All Departments</h2>
                         @if (allDepartments.Count > 0)
                         {
                             foreach (var department in allDepartments)
@@ -51,13 +71,11 @@ else
                     {
                         <p>Some error with all departments.</p>
                     }
-                </Content>
-            </Tab>
-            <Tab Title="All Teams">
-                <Content>
-                    @if(allTeams != null)
+                </div>
+                <div class="col-3">
+                    @if (allTeams != null)
                     {
-                        <h1>All Teams</h1>
+                        <h2>All Teams</h2>
                         @if (allTeams.Count > 0)
                         {
                             foreach (Team team in allTeams)
@@ -75,20 +93,17 @@ else
                     {
                         <p>Some error with all teams.</p>
                     }
-                </Content>
-            </Tab>
-            <Tab Title="All Users">
-                <Content>
-                    @if(allUsers != null)
+                </div>
+                <div class="col-3">
+                    @if (allUsers != null)
                     {
-                        <h1>All users</h1>
+                        <h2>All users</h2>
                         @if (allUsers.Count > 0)
                         {
                             foreach (User user in allUsers)
                             {
-                                <UserComponent user="user" typeOfUser="null"/>
+                                <UserComponent user="user" />
                             }
-
                         }
                         else
                         {
@@ -99,18 +114,16 @@ else
                     {
                         <p>Some error with all users.</p>
                     }
-                </Content>
-            </Tab>
-            <Tab Title="Free Users">
-                <Content>
-                    @if(freeUsers != null)
+                </div>
+                <div class="col-3">
+                    @if (freeUsers != null)
                     {
-                        <h1>Free users</h1>
+                        <h2>Free users</h2>
                         @if (freeUsers.Count > 0)
                         {
                             foreach (User user in freeUsers)
                             {
-                                <UserComponent user="user" typeOfUser="Free User"/>
+                                <UserComponent user="user" />
                             }
                         }
                         else
@@ -122,34 +135,41 @@ else
                     {
                         <p>Some error with free users.</p>
                     }
-                </Content>
-            </Tab>
-        </Tabs>
-    }
-    <!-- director view -->
-    if(directorMyDepartment != null && roles.Contains("director"))
-    {
-        <h1>My department</h1>
-        <DepartmentComponent department="directorMyDepartment"/>
-    }
-    <!-- leader view -->
-    if(leaderMyTeam != null && roles.Contains("leader"))
-    {
-        <h1>My team</h1>
-        <TeamComponent team="leaderMyTeam"/>
-    }
+                </div>
+            </div>
+        }
+        <!-- director view -->
+        if (directorMyDepartment != null && roles.Contains("director"))
+        {
+            <div class="row">
+                <div class="col-12 d-flex justify-content-center my-1">
+                    <h2>My department</h2>
+                    <DepartmentComponent department="directorMyDepartment" />
+                </div>
+            </div>
+            
+        }
+        <!-- leader view -->
+        if (leaderMyTeam != null && roles.Contains("leader"))
+        {
+            <div class="row">
+                <div class="col-12 d-flex justify-content-center my-1">
+                    <h2>My team</h2>
+                    <TeamComponent team="leaderMyTeam" />
+                </div>
+            </div>
+        }
 
-}
-
+    }
+</div>
 @code {
     bool isLogged = false;
-
     ProfileResponse? profileResponse;
     string[] roles;
-    List<Team>? allTeams;
-    List<DepartmentByIDResponse>? allDepartments;
-    List<User>? allUsers;
-    List<User>? freeUsers;
+    List<Team> allTeams;
+    List<DepartmentByIDResponse> allDepartments;
+    List<User> allUsers;
+    List<User> freeUsers;
     DepartmentByIDResponse directorMyDepartment;
     Team leaderMyTeam;
     // TODO profile change
@@ -186,7 +206,6 @@ else
             {
                 // info about team and users in team
                 leaderMyTeam = await teamsService.GetMyTeam();
-
             }
         }
     }

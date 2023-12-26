@@ -4,25 +4,35 @@
 
 <PageTitle>Registration</PageTitle>
 
-<h3>Registration</h3>
+<div class="container-fluid">
+	<div class="row">
+		<h1>Registration</h1>
+	</div>
+	<div class="row">
+		<div class="col-3">
+			<EditForm Model="registrationModel" FormName="RegistrationForm" OnValidSubmit="OnValidSubmit">
+				<DataAnnotationsValidator />
+				<ValidationSummary />
+				<div class="form-group my-2">
+					<InputText id="firstName" @bind-Value="registrationModel.FirstName" placeholder="Enter First name" class="form-control"></InputText>
+				</div>
+				<div class="form-group my-2">
+					<InputText id="lastName" @bind-Value="registrationModel.LastName" placeholder="Enter Last name" class="form-control"></InputText>
+				</div>
+				<div class="form-group my-2">
+					<InputText id="email" @bind-Value="registrationModel.Email" placeholder="Enter email" type="email" class="form-control"></InputText>
+				</div>
+				<div class="form-group my-2">
+					<InputText id="password" @bind-Value="registrationModel.Password" placeholder="Enter password" type="password" class="form-control"></InputText>
+				</div>
+				<button class="btn btn-primary">SUBMIT</button>
+			</EditForm>
+		</div>
+	</div>
+</div>
 
-<EditForm Model="registrationModel" FormName="RegistrationForm" OnValidSubmit="OnValidSubmit">
-	<DataAnnotationsValidator />
-	<ValidationSummary />
-	<div class="mb-2">
-		<InputText id="firstName" @bind-Value="registrationModel.FirstName" placeholder="Enter First name" ></InputText>
-	</div>
-	<div class="mb-2">
-		<InputText id="lastName" @bind-Value="registrationModel.LastName" placeholder="Enter Last name"></InputText>
-	</div>
-	<div class="mb-2">
-		<InputText id="email" @bind-Value="registrationModel.Email" placeholder="Enter email" type="email"></InputText>
-	</div>
-	<div class="mb-2">
-		<InputText id="password" @bind-Value="registrationModel.Password" placeholder="Enter password" type="password"></InputText>
-	</div>
-	<button>SUBMIT</button>
-</EditForm>
+
+
 
 @code {
 

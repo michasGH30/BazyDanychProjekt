@@ -1,23 +1,21 @@
-﻿<Card>
-    <CardTitle>
-        <p><b>Depatment Name: </b>@department.Department.Name</p>
-    </CardTitle>
-    <CardBody>
-        <UserComponent user="@department.Department.Director" typeOfUser="Director"/>
-        @if (department.Teams != null)
+﻿<div>
+    <p><b>Depatment Name: </b>@department.Department.Name</p>
+    <h4>Director</h4>
+    <UserComponent user="@department.Department.Director"/>
+    @if (department.Teams != null)
+    {
+        @foreach (Team team in department.Teams)
         {
-            <h4>Teams</h4>
-            @foreach (Team team in department.Teams)
-            {
-                <TeamComponent team="team" />
-            }
+            <TeamComponent team="team" />
         }
-        else
-        {
-            <p>This department has no teams.</p>
-        }
-    </CardBody>
-</Card>
+        <hr class="hr" />
+    }
+    else
+    {
+        <p>This department has no teams.</p>
+    }
+    <hr class="hr"/>
+</div>
 @code {
     [Parameter]
     public DepartmentByIDResponse department { get; set; }

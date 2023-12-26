@@ -3,23 +3,121 @@
 @inject NavigationManager navigationManager
 @inject IMeetingsService meetingService
 <PageTitle>Meeting Details</PageTitle>
-<h3>Meeting Details</h3>
-
-@if(!isLogged)
-{
-    <p>Loading ...</p>
-}
-else
-{
-    if(meeting != null)
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12 d-flex justify-content-center my-1">
+            <h1>Meeting Details</h1>
+        </div>
+    </div>
+</div>
+<div class="row">
+    @if (!isLogged)
     {
-        <MeetingComponent meeting="@meeting"/>
+        <div class="col-12 d-flex justify-content-center my-1">
+            <p>Loading ...</p>
+        </div>
     }
     else
     {
-        <p>Some issue with meeting details</p>
+        if (meeting != null)
+        {
+            <div class="col-8">
+                <div class="row">
+                    <p><b>Title:</b> @meeting.Title</p>
+                    <p><b>Date:</b> @meeting.Date</p>
+                    <p><b>Type:</b> @StringOperations.Capitalise(meeting.TypeOfMeeting)</p>
+                    <p><b>Repetition:</b> @StringOperations.Capitalise(meeting.RepetitionOfMeeting)</p>
+                    @switch (meeting.StatusOfMeeting)
+                    {
+                        case "scheduled":
+                            <Alert Color="AlertColor.Success">@StringOperations.Capitalise(meeting.StatusOfMeeting)</Alert>
+                            break;
+                        case "rescheduled":
+                            <Alert Color="AlertColor.Warning">@StringOperations.Capitalise(meeting.StatusOfMeeting)</Alert>
+                            break;
+                        case "cancelled":
+                            <Alert Color="AlertColor.Danger">@StringOperations.Capitalise(meeting.StatusOfMeeting)</Alert>
+                            break;
+                    }
+                    <h3>Creator</h3>
+                    <UserComponent user="@meeting.Creator" />
+                </div>
+                <div class="row">
+                    <h3>Messages</h3>
+                    @if (meeting.Messages.Count > 0)
+                    {
+                        foreach (MeetingMessage message in meeting.Messages)
+                        {
+                            <Card>
+                                <CardBody>
+                                    <h4>Message send by:</h4>
+                                    <UserComponent user="message.Sender" />
+                                    <p><b>Message:</b> @message.Message</p>
+                                </CardBody>
+                            </Card>
+
+                        }
+                    }
+                    else
+                    {
+                        <Card>
+                            <CardBody>
+                                <p>This meeting has no messages</p>
+                            </CardBody>
+                        </Card>
+                    }
+                    <h3>Attachments</h3>
+                    @if (meeting.Attachments.Count > 0)
+                    {
+                        foreach (MeetingAttachment attachment in meeting.Attachments)
+                        {
+                            <Card>
+                                <CardBody>
+                                    <h4>Attachment send by:</h4>
+                                    <UserComponent user="attachment.Sender"/>
+                                    <p><b>File name:</b> @attachment.Name</p>
+                                    <p><b>File type:</b> @attachment.Type</p>
+                                </CardBody>
+                            </Card>
+
+                        }
+                    }
+                    else
+                    {
+                        <Card>
+                            <CardBody>
+                                <p>This meeting has no attachments</p>
+                            </CardBody>
+                        </Card>
+                    }
+                </div>
+            </div>
+            <div class="col-4">
+                <h3>Members</h3>
+                @if (meeting.Members.Count > 0)
+                {
+                    foreach (User user in meeting.Members)
+                    {
+                        <UserComponent user="user" />
+                    }
+                }
+                else
+                {
+                    <Card>
+                        <CardBody>
+                            <p>This meeting has no members</p>
+                        </CardBody>
+                    </Card>
+                }
+            </div>
+        }
+        else
+        {
+            <p>Some issue with meeting details</p>
+        }
     }
-}
+</div>
+
 
 @code {
     [Parameter]

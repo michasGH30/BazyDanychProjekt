@@ -1,10 +1,4 @@
-﻿<Card>
-    @if(typeOfUser.CompareTo("null") != 0)
-    {
-        <CardTitle>
-            <p>@typeOfUser</p>
-        </CardTitle>
-    }
+﻿<Card Class="my-2">
     <CardBody>
         <p><b>User: </b>@user.FirstName @user.LastName</p>
         <p><b>Email: </b>@user.Email</p>
@@ -14,6 +8,4 @@
 @code {
     [Parameter]
     public User user { get; set; }
-    [Parameter]
-    public string typeOfUser { get; set; } = string.Empty;
 }

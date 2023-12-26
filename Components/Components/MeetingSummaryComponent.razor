@@ -1,7 +1,7 @@
 ﻿@inject NavigationManager navigationManager
 @inject IMeetingsService meetingService
 <ConfirmDialog @ref="dialog" />
-<Card Style="@style" Class="col-4">
+<Card Style="@style">
     <CardBody>
         <p><b>Title: </b>@meetingSummary.Title</p>
         <p><b>Date: </b>@meetingSummary.Date</p>
@@ -19,10 +19,10 @@
         }
         @if(meetingSummary.Creator)
         {
-            <Button Color="ButtonColor.Warning" @onclick="((args) => OnClickUpdate(args,meetingSummary.MeetingID))" Class="mx-1">Modify</Button>
-            <Button Color="ButtonColor.Danger" @onclick="((args) => OnCLickDelete(args,meetingSummary.MeetingID))" Class="mx-1">Delete</Button>
+            <Button Color="ButtonColor.Warning" @onclick="((args) => OnClickUpdate(args,meetingSummary.MeetingID))" Class="mx-1 my-1">Modify</Button>
+            <Button Color="ButtonColor.Danger" @onclick="((args) => OnCLickDelete(args,meetingSummary.MeetingID))" Class="mx-1 my-1">Delete</Button>
         }
-        <Button Color="ButtonColor.Primary" @onclick="((args) => OnClickShowDetails(args,meetingSummary.MeetingID))" Class="mx-1">See details</Button>
+        <Button Color="ButtonColor.Primary" @onclick="((args) => OnClickShowDetails(args,meetingSummary.MeetingID))" Class="mx-1 my-1">See details</Button>
     </CardBody>
 </Card>
 
