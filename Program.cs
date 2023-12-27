@@ -23,6 +23,10 @@ builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 
 builder.Services.AddScoped<IMeetingsService, MeetingsService>();
 
+builder.Services.AddScoped<IMessagesService, MessagesService>();
+
+builder.Services.AddScoped<IAttachmentsService, AttachmentsService>();
+
 builder.Services.AddBlazorBootstrap();
 
 var app = builder.Build();

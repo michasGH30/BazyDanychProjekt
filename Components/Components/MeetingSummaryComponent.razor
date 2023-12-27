@@ -19,10 +19,10 @@
         }
         @if(meetingSummary.Creator)
         {
-            <Button Color="ButtonColor.Warning" @onclick="((args) => OnClickUpdate(args,meetingSummary.MeetingID))" Class="mx-1 my-1">Modify</Button>
-            <Button Color="ButtonColor.Danger" @onclick="((args) => OnCLickDelete(args,meetingSummary.MeetingID))" Class="mx-1 my-1">Delete</Button>
+            <Button Color="ButtonColor.Warning" @onclick="((args) => OnClickUpdate(args,meetingSummary.MeetingID))" Class="mx-1 my-1"><Icon Name="IconName.Pencil"/> Modify</Button>
+            <Button Color="ButtonColor.Danger" @onclick="((args) => OnCLickDelete(args,meetingSummary.MeetingID))" Class="mx-1 my-1"><Icon Name="IconName.Trash"/> Delete</Button>
         }
-        <Button Color="ButtonColor.Primary" @onclick="((args) => OnClickShowDetails(args,meetingSummary.MeetingID))" Class="mx-1 my-1">See details</Button>
+        <Button Color="ButtonColor.Primary" @onclick="((args) => OnClickShowDetails(args,meetingSummary.MeetingID))" Class="mx-1 my-1"><Icon Name="IconName.Receipt"/> See details</Button>
     </CardBody>
 </Card>
 

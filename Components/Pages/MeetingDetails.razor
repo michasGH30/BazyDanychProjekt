@@ -2,7 +2,9 @@
 @inject ILoginService loginService
 @inject NavigationManager navigationManager
 @inject IMeetingsService meetingService
+@inject IMessagesService messagesService
 <PageTitle>Meeting Details</PageTitle>
+<Modal @ref="modal" />
 <div class="container-fluid">
     <div class="row">
         <div class="col-12 d-flex justify-content-center my-1">
@@ -23,73 +25,123 @@
         {
             <div class="col-8">
                 <div class="row">
-                    <p><b>Title:</b> @meeting.Title</p>
-                    <p><b>Date:</b> @meeting.Date</p>
-                    <p><b>Type:</b> @StringOperations.Capitalise(meeting.TypeOfMeeting)</p>
-                    <p><b>Repetition:</b> @StringOperations.Capitalise(meeting.RepetitionOfMeeting)</p>
-                    @switch (meeting.StatusOfMeeting)
+
+                    <div class="@styleClass">
+                        <p><b>Title:</b> @meeting.Title</p>
+                        <p><b>Date:</b> @meeting.Date</p>
+                        <p><b>Type:</b> @StringOperations.Capitalise(meeting.TypeOfMeeting)</p>
+                        <p><b>Repetition:</b> @StringOperations.Capitalise(meeting.RepetitionOfMeeting)</p>
+                        @switch (meeting.StatusOfMeeting)
+                        {
+                            case "scheduled":
+                                <Alert Color="AlertColor.Success">@StringOperations.Capitalise(meeting.StatusOfMeeting)</Alert>
+                                break;
+                            case "rescheduled":
+                                <Alert Color="AlertColor.Warning">@StringOperations.Capitalise(meeting.StatusOfMeeting)</Alert>
+                                break;
+                            case "cancelled":
+                                <Alert Color="AlertColor.Danger">@StringOperations.Capitalise(meeting.StatusOfMeeting)</Alert>
+                                break;
+                        }
+                    </div>
+                    <div class="@styleClass">
+                        <Button Color="ButtonColor.Primary" Class="my-1 mx-1" @onclick="OnClickAddMessage"><Icon Name="IconName.ChatRightText" /> Add new message</Button>
+                        <Button Color="ButtonColor.Secondary" Class="my-1 mx-1" @onclick="OnClickAddAttachment"><Icon Name="IconName.FileArrowUp" /> Add new attachment</Button>
+                    </div>
+                    @if(meeting.IsCreator)
                     {
-                        case "scheduled":
-                            <Alert Color="AlertColor.Success">@StringOperations.Capitalise(meeting.StatusOfMeeting)</Alert>
-                            break;
-                        case "rescheduled":
-                            <Alert Color="AlertColor.Warning">@StringOperations.Capitalise(meeting.StatusOfMeeting)</Alert>
-                            break;
-                        case "cancelled":
-                            <Alert Color="AlertColor.Danger">@StringOperations.Capitalise(meeting.StatusOfMeeting)</Alert>
-                            break;
+                        <div class="@styleClass">
+                            <Button Color="ButtonColor.Warning" @onclick="((args) => OnClickUpdate(args,meeting.ID))" Class="mx-1 my-1"><Icon Name="IconName.Pencil"/> Modify</Button>
+                            <Button Color="ButtonColor.Danger" @onclick="((args) => OnCLickDelete(args,meeting.ID))" Class="mx-1 my-1"><Icon Name="IconName.Trash"/> Delete</Button>
+                        </div>
                     }
                     <h3>Creator</h3>
                     <UserComponent user="@meeting.Creator" />
                 </div>
                 <div class="row">
-                    <h3>Messages</h3>
-                    @if (meeting.Messages.Count > 0)
-                    {
-                        foreach (MeetingMessage message in meeting.Messages)
+                    <div class="col-6">
+                        <h3>Messages</h3>
+                        @if (meeting.Messages.Count > 0)
+                        {
+                            foreach (MeetingMessage message in meeting.Messages)
+                            {
+                                <Card>
+                                    <CardBody>
+                                        <h4>Message send by:</h4>
+                                        <UserComponent user="message.Sender" />
+                                        <p><b>Message:</b> @message.Message</p>
+                                    </CardBody>
+                                </Card>
+
+                            }
+                        }
+                        else
                         {
                             <Card>
                                 <CardBody>
-                                    <h4>Message send by:</h4>
-                                    <UserComponent user="message.Sender" />
-                                    <p><b>Message:</b> @message.Message</p>
+                                    <p>This meeting has no messages</p>
                                 </CardBody>
                             </Card>
-
                         }
-                    }
-                    else
-                    {
-                        <Card>
-                            <CardBody>
-                                <p>This meeting has no messages</p>
-                            </CardBody>
-                        </Card>
-                    }
-                    <h3>Attachments</h3>
-                    @if (meeting.Attachments.Count > 0)
-                    {
-                        foreach (MeetingAttachment attachment in meeting.Attachments)
+                    </div>
+                    <div class="col-6">
+                        <h3>Attachments</h3>
+                        @if (meeting.Attachments.Count > 0)
+                        {
+                            foreach (MeetingAttachment attachment in meeting.Attachments)
+                            {
+                                <Card>
+                                    <CardBody>
+                                        <h4>Attachment send by:</h4>
+                                        <UserComponent user="attachment.Sender" />
+                                        <p><b>File name:</b> @attachment.Name</p>
+                                        <p>
+                                            <b>File type: </b>
+                                            @switch (attachment.Type)
+                                            {
+                                                case "Word Document":
+                                                    <Icon Name="IconName.FileEarmarkWord" Size="IconSize.x4" />
+                                                    break;
+                                                case "PDF Document":
+                                                    <Icon Name="IconName.FileEarmarkPdf" Size="IconSize.x4" />
+                                                    break;
+                                                case "Image":
+                                                    <Icon Name="IconName.FileEarmarkImage" Size="IconSize.x4" />
+                                                    break;
+                                                case "Audio":
+                                                    <Icon Name="IconName.FileEarmarkMusic" Size="IconSize.x4" />
+                                                    break;
+                                                case "Video":
+                                                    <Icon Name="IconName.FileEarmarkPlay" Size="IconSize.x4" />
+                                                    break;
+                                                case "Spreadsheet":
+                                                    <Icon Name="IconName.FileEarmarkExcel" Size="IconSize.x4" />
+                                                    break;
+                                                case "Presentation":
+                                                    <Icon Name="IconName.FileEarmarkPpt" Size="IconSize.x4" />
+                                                    break;
+                                                case "Code":
+                                                    <Icon Name="IconName.FileEarmarkCode" Size="IconSize.x4" />
+                                                    break;
+                                                case "Zip File":
+                                                    <Icon Name="IconName.FileEarmarkZip" Size="IconSize.x4"/>
+                                                    break;
+                                            }
+                                        </p>
+                                    </CardBody>
+                                </Card>
+
+                            }
+                        }
+                        else
                         {
                             <Card>
                                 <CardBody>
-                                    <h4>Attachment send by:</h4>
-                                    <UserComponent user="attachment.Sender"/>
-                                    <p><b>File name:</b> @attachment.Name</p>
-                                    <p><b>File type:</b> @attachment.Type</p>
+                                    <p>This meeting has no attachments</p>
                                 </CardBody>
                             </Card>
-
                         }
-                    }
-                    else
-                    {
-                        <Card>
-                            <CardBody>
-                                <p>This meeting has no attachments</p>
-                            </CardBody>
-                        </Card>
-                    }
+                    </div>
                 </div>
             </div>
             <div class="col-4">
@@ -120,10 +172,15 @@
 
 
 @code {
+    private Modal modal = default!;
+    private ConfirmDialog dialog = default!;
     [Parameter]
     public int messageID { get; set; }
+    [Inject]
+    protected ToastService toastService { get; set; }
     bool isLogged = false;
     Meeting meeting;
+    string styleClass = "";
     protected override async Task OnInitializedAsync()
     {
         isLogged = await loginService.IsLogged();
@@ -134,6 +191,78 @@
         else
         {
             meeting = await meetingService.GetMeetingByID(messageID);
+            if(meeting.IsCreator)
+            {
+                styleClass = "col-4";
+            }
+            else
+            {
+                styleClass = "col-6";
+            }
         }
+    }
+
+    protected async Task OnClickAddMessage(EventArgs args)
+    {
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("MeetingID", meeting.ID);
+        parameters.Add("IsMessage", true);
+        parameters.Add("MessagesList", meeting.Messages);
+        parameters.Add("AttachmentsList", meeting.Attachments);
+        parameters.Add("CloseModalCallback", EventCallback.Factory.Create<MouseEventArgs>(this, CloseModalCallback));
+        await modal.ShowAsync<AddMessageAttachemntForm>(title: "New message", parameters: parameters);
+    }
+
+    protected async Task OnClickAddAttachment(EventArgs args)
+    {
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("MeetingID", meeting.ID);
+        parameters.Add("IsMessage", false);
+        parameters.Add("MessagesList", meeting.Messages);
+        parameters.Add("AttachmentsList", meeting.Attachments);
+        parameters.Add("CloseModalCallback", EventCallback.Factory.Create<MouseEventArgs>(this, CloseModalCallback));
+        await modal.ShowAsync<AddMessageAttachemntForm>(title: "New Attachment", parameters: parameters);
+    }
+
+    protected async Task CloseModalCallback(MouseEventArgs e)
+    {
+        await modal.HideAsync();
+        StateHasChanged();
+    }
+
+    protected void OnClickUpdate(EventArgs args, int id)
+    {
+        navigationManager.NavigateTo($"/meetingForm/{id}");
+    }
+
+    protected async void OnCLickDelete(EventArgs args, int id)
+    {
+        var options = new ConfirmDialogOptions
+            {
+                YesButtonText = "OK",
+                YesButtonColor = ButtonColor.Success,
+                NoButtonText = "CANCEL",
+                NoButtonColor = ButtonColor.Danger
+            };
+
+        var confirmation = await dialog.ShowAsync(
+            title: "Are you sure you want to delete this meeting?",
+            message1: "Do you want to proceed?",
+        confirmDialogOptions: options);
+
+        if (confirmation)
+        {
+            bool success = await meetingService.DeleteMeetingByID(id);
+            if (success)
+            {
+                toastService.Notify(new(ToastType.Success, "Successfully deleted meeting"));
+                navigationManager.NavigateTo("/");
+            }
+            else
+            {
+                toastService.Notify(new(ToastType.Danger, "Unsuccessfully deleted meeting"));
+            }
+        }
+
     }
 }

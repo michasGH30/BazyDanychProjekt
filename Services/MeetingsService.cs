@@ -24,11 +24,11 @@ namespace bazyProjektBlazor.Services
 
         public Task<bool> DeleteMeetingByID(int id);
 
-        public Task<List<TypeStatusRepetitionOfMeeting>> GetRepetitionOfMeeting();
+        public Task<List<TypeStatusRepetitionOfMeetingResponse>> GetRepetitionOfMeeting();
 
-        public Task<List<TypeStatusRepetitionOfMeeting>> GetTypesOfMeeting();
+        public Task<List<TypeStatusRepetitionOfMeetingResponse>> GetTypesOfMeeting();
 
-        public Task<List<TypeStatusRepetitionOfMeeting>> GetStatusesOfMeeting();
+        public Task<List<TypeStatusRepetitionOfMeetingResponse>> GetStatusesOfMeeting();
 
         public Task<bool> UpdateMeeting(CreateMeetingRequest request);
     }
@@ -140,7 +140,7 @@ namespace bazyProjektBlazor.Services
 
             meetingConnection.Open();
 
-            using var meetingCommand = new MySqlCommand("SELECT meetings.ID, meetings.title, meetings.date, typeofmeeting.type, repetitionofmeeting.repetition, statusofmeeting.status, users.ID FROM meetings INNER JOIN typeofmeeting on meetings.typeID = typeofmeeting.ID INNER JOIN repetitionofmeeting on meetings.repeatingID = repetitionofmeeting.ID INNER JOIN statusofmeeting on meetings.statusID = statusofmeeting.ID INNER JOIN users on meetings.creatorID = users.ID WHERE meetings.ID = @ID;", meetingConnection);
+            using var meetingCommand = new MySqlCommand("SELECT meetings.ID, meetings.title, meetings.date, typeofmeeting.type, repetitionofmeeting.repetition, statusofmeeting.status, meetings.creatorID FROM meetings INNER JOIN typeofmeeting on meetings.typeID = typeofmeeting.ID INNER JOIN repetitionofmeeting on meetings.repeatingID = repetitionofmeeting.ID INNER JOIN statusofmeeting on meetings.statusID = statusofmeeting.ID WHERE meetings.ID = @ID;", meetingConnection);
             meetingCommand.Parameters.AddWithValue("@ID", id);
 
             MySqlDataReader meetingsReader = meetingCommand.ExecuteReader();
@@ -153,6 +153,7 @@ namespace bazyProjektBlazor.Services
                 response.TypeOfMeeting = meetingsReader.GetString(3);
                 response.RepetitionOfMeeting = meetingsReader.GetString(4);
                 response.StatusOfMeeting = meetingsReader.GetString(5);
+                response.IsCreator = meetingsReader.GetInt32(6) == currentUser.ID;
                 response.Creator = await usersService.GetUserById(meetingsReader.GetInt32(6));
             }
 
@@ -317,9 +318,9 @@ namespace bazyProjektBlazor.Services
             return await Task.FromResult(response);
         }
 
-        public async Task<List<TypeStatusRepetitionOfMeeting>> GetRepetitionOfMeeting()
+        public async Task<List<TypeStatusRepetitionOfMeetingResponse>> GetRepetitionOfMeeting()
         {
-            List<TypeStatusRepetitionOfMeeting> response = [];
+            List<TypeStatusRepetitionOfMeetingResponse> response = [];
 
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
@@ -341,9 +342,9 @@ namespace bazyProjektBlazor.Services
             return await Task.FromResult(response);
         }
 
-        public async Task<List<TypeStatusRepetitionOfMeeting>> GetStatusesOfMeeting()
+        public async Task<List<TypeStatusRepetitionOfMeetingResponse>> GetStatusesOfMeeting()
         {
-            List<TypeStatusRepetitionOfMeeting> response = [];
+            List<TypeStatusRepetitionOfMeetingResponse> response = [];
 
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
@@ -365,9 +366,9 @@ namespace bazyProjektBlazor.Services
             return await Task.FromResult(response);
         }
 
-        public async Task<List<TypeStatusRepetitionOfMeeting>> GetTypesOfMeeting()
+        public async Task<List<TypeStatusRepetitionOfMeetingResponse>> GetTypesOfMeeting()
         {
-            List<TypeStatusRepetitionOfMeeting> response = [];
+            List<TypeStatusRepetitionOfMeetingResponse> response = [];
 
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 

@@ -1,0 +1,120 @@
+﻿@inject IAttachmentsService attachmentsService
+@inject IMessagesService messagedService
+@inject IUsersService userService
+
+@if(IsMessage)
+{
+    <EditForm FormName="AddNewMessage" Model="@addMessage" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="form-group my-2">
+        <InputText id="message" type="text" class="form-control" @bind-Value="addMessage.Message" placeholder="Enter your message"></InputText>
+    </div>
+    <button Class="btn btn-success"><Icon Name="IconName.Plus"/> Add</button>
+    </EditForm>
+}
+else
+{
+    <EditForm FormName="AddNewAttachment" Model="@addAttachment" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="form-group my-2">
+            <InputText id="name" type="text" class="form-control" @bind-Value="addAttachment.Name" placeholder="Enter attachment name"></InputText>
+        </div>
+        <div class="form-group my-2">
+            <InputSelect @bind-Value="addAttachment.TypeOfAttachment" class="form-control">
+                <option value="0">---</option>
+                @foreach(TypesOfAttachmentsResponse type in typesOfAttachments)
+                {
+                    <option value="@type.ID">@type.Type</option>
+                }
+            </InputSelect>
+        </div>
+        <button Class="btn btn-success"><Icon Name="IconName.Plus" /> Add</button>
+    </EditForm>
+}
+
+
+@code {
+    AddNewMessageRequest addMessage = new();
+    AddNewAttachmentRequest addAttachment = new();
+    List<TypesOfAttachmentsResponse> typesOfAttachments = [];
+
+    [Inject]
+    protected ToastService toastService { get; set; }
+
+    [Parameter]
+    public int MeetingID { get; set; }
+
+    [Parameter]
+    public bool IsMessage { get; set; }
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> CloseModalCallback { get; set; }
+
+    [Parameter]
+    public List<MeetingMessage> MessagesList { get; set; }
+
+    [Parameter]
+    public List<MeetingAttachment> AttachmentsList { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(IsMessage)
+        {
+            addMessage.MeetingID = MeetingID;
+        }
+        else
+        {
+            addAttachment.MettingID = MeetingID;
+            typesOfAttachments = await attachmentsService.GetAttachmentsTypes();
+        }
+
+    }
+
+    private async Task OnValidSubmit()
+    {
+        if(IsMessage)
+        {
+            var response = await messagedService.SendNewMessage(addMessage);
+            if(response.IsSuccess)
+            {
+                MessagesList.Add(new()
+                    {
+                        ID = response.ID,
+                        Message = addMessage.Message,
+                        Sender = await userService.GetUserById(response.SenderID)
+                    });
+                addMessage.Message = "";
+                toastService.Notify(new(ToastType.Success, "Successfully added new message"));
+                await CloseModalCallback.InvokeAsync();
+            }
+            else
+            {
+                toastService.Notify(new(ToastType.Danger, "Unsuccessfully added new message"));
+            }
+        }
+        else
+        {
+            var response = await attachmentsService.AddNewAttachment(addAttachment);
+            if(response.IsSuccess)
+            {
+                AttachmentsList.Add(new()
+                    {
+                        ID = response.ID,
+                        Name = addAttachment.Name,
+                        Type = await attachmentsService.GetTypeByID(addAttachment.TypeOfAttachment),
+                        Sender = await userService.GetUserById(response.SenderID)
+                    });
+                addAttachment.TypeOfAttachment = 0;
+                addAttachment.Name = "";
+                toastService.Notify(new(ToastType.Success, "Successfully added new attachment"));
+                await CloseModalCallback.InvokeAsync();
+            }
+            else
+            {
+                toastService.Notify(new(ToastType.Danger, "Unsuccessfully added new attachment"));
+            }
+        }
+    }
+}

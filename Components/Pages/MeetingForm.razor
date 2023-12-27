@@ -46,7 +46,7 @@ else
 					</div>
 					<div class="form-group my-2">
 						<InputSelect @bind-Value="request.RepetitionOfMeeting">
-							@foreach (TypeStatusRepetitionOfMeeting r in repetitions)
+							@foreach (TypeStatusRepetitionOfMeetingResponse r in repetitions)
 							{
 								<option value="@r.ID">@r.Name</option>
 							}
@@ -54,7 +54,7 @@ else
 					</div>
 					<div class="form-group my-2">
 						<InputSelect @bind-Value="request.TypeOfMeeting">
-							@foreach (TypeStatusRepetitionOfMeeting t in types)
+							@foreach (TypeStatusRepetitionOfMeetingResponse t in types)
 							{
 								<option value="@t.ID">@t.Name</option>
 							}
@@ -64,7 +64,7 @@ else
 					{
 						<div class="form-group my-2">
 							<InputSelect @bind-Value="request.StatusOfMeeting">
-								@foreach (TypeStatusRepetitionOfMeeting s in statuses)
+								@foreach (TypeStatusRepetitionOfMeetingResponse s in statuses)
 								{
 									<option value="@s.ID">@s.Name</option>
 								}
@@ -95,9 +95,9 @@ else
 	CreateMeetingRequest request = new();
 	private DateOnly minDate;
 	private DateOnly maxDate;
-	private List<TypeStatusRepetitionOfMeeting> types;
-	private List<TypeStatusRepetitionOfMeeting> repetitions;
-	private List<TypeStatusRepetitionOfMeeting> statuses;
+	private List<TypeStatusRepetitionOfMeetingResponse> types;
+	private List<TypeStatusRepetitionOfMeetingResponse> repetitions;
+	private List<TypeStatusRepetitionOfMeetingResponse> statuses;
 	private bool isLogged = false;
 	private List<User> users;
 	private List<UserForm> userForms = [];
