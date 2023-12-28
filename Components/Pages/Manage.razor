@@ -6,6 +6,7 @@
 @inject ITeamsService teamsService
 @inject IUsersService userService
 <PageTitle>Manage</PageTitle>
+<Modal @ref="modal" />
 <div class="container-fluid">
     <div class="row">
         <div class="col-12 d-flex justify-content-center my-1">
@@ -35,11 +36,14 @@
             else
             {
                 <div class="col-12 d-flex justify-content-center my-1">
-                    <div>
+                    <div class="col-4">
                         <h2>Your profile</h2>
                         <p><b>First name: </b>@profileResponse.FirstName</p><br />
                         <p><b>Last name: </b>@profileResponse.LastName</p><br />
                         <p><b>Email: </b>@profileResponse.Email</p>
+                    </div>
+                    <div class="col-8 d-flex justify-content-start align-content-center flex-wrap">
+                        <Button Color="ButtonColor.Warning" @onclick="OnClickChangeProfile"><Icon Name="IconName.Pencil" /> Modify profile</Button>
                     </div>
                     
                 </div>
@@ -163,8 +167,9 @@
     }
 </div>
 @code {
+    private Modal modal = default!;
     bool isLogged = false;
-    ProfileResponse? profileResponse;
+    User profileResponse;
     string[] roles;
     List<Team> allTeams;
     List<DepartmentByIDResponse> allDepartments;
@@ -172,7 +177,6 @@
     List<User> freeUsers;
     DepartmentByIDResponse directorMyDepartment;
     Team leaderMyTeam;
-    // TODO profile change
     protected override async Task OnInitializedAsync()
     {
         isLogged = await loginService.IsLogged();
@@ -208,5 +212,19 @@
                 leaderMyTeam = await teamsService.GetMyTeam();
             }
         }
+    }
+
+    protected async Task OnClickChangeProfile(EventArgs args)
+    {
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("User", profileResponse);
+        parameters.Add("CloseModalCallback", EventCallback.Factory.Create<MouseEventArgs>(this, CloseModalCallback));
+        await modal.ShowAsync<ChangeUserForm>(title: "Edit profile", parameters: parameters);
+    }
+
+    protected async Task CloseModalCallback(MouseEventArgs e)
+    {
+        await modal.HideAsync();
+        StateHasChanged();
     }
 }

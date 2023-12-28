@@ -1,0 +1,47 @@
+﻿@inject IProfileService profileService
+
+<EditForm Model="formModel" FormName="ChangeUser" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="form-group my-2">
+        <InputText id="firstName" type="text" @bind-Value="formModel.FirstName" class="form-control"/>
+    </div>
+    <div class="form-group my-2">
+        <InputText id="lastName" type="text" @bind-Value="formModel.LastName" class="form-control" />
+    </div>
+    <div class="form-group my-2">
+        <InputText id="email" type="email" @bind-Value="formModel.Email" class="form-control" />
+    </div>
+    <button class="btn btn-success"><Icon Name="IconName.Pencil"/> Modify</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public User User { get; set; }
+    [Parameter]
+    public EventCallback<MouseEventArgs> CloseModalCallback { get; set; }
+    [Inject]
+    protected ToastService toastService { get; set; }
+    private User formModel;
+
+    protected override void OnInitialized()
+    {
+        formModel = User;
+        base.OnInitialized();
+    }
+
+    private async Task OnValidSubmit()
+    {
+        var response = await profileService.UpdateProfile(formModel);
+        if(response)
+        {
+            User = formModel;
+            toastService.Notify(new(ToastType.Success, "Succesfully edited profile"));
+            await CloseModalCallback.InvokeAsync();
+        }
+        else
+        {
+            toastService.Notify(new(ToastType.Danger, "Unsuccesfully edited profile"));
+        }
+    }
+}

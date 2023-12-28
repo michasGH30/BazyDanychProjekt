@@ -1,20 +1,19 @@
 ﻿using bazyProjektBlazor.Auth;
-using bazyProjektBlazor.Requests;
-using bazyProjektBlazor.Responses;
+using bazyProjektBlazor.Models;
 using MySqlConnector;
 
 namespace bazyProjektBlazor.Services
 {
     public interface IProfileService
     {
-        public Task<ProfileResponse> GetProfile();
+        public Task<User> GetProfile();
 
-        public Task<bool> UpdateProfile(ChangeProfileRequest request);
+        public Task<bool> UpdateProfile(User request);
     }
 
     public class ProfileService(IConfiguration configuration, ICurrentUser currentUser) : IProfileService
     {
-        public async Task<ProfileResponse> GetProfile()
+        public async Task<User> GetProfile()
         {
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
@@ -23,7 +22,7 @@ namespace bazyProjektBlazor.Services
             using var command = new MySqlCommand("SELECT firstName, lastName, email FROM users WHERE ID=@ID", connection);
             command.Parameters.AddWithValue("@ID", currentUser.ID);
 
-            ProfileResponse response = new();
+            User response = new();
             MySqlDataReader reader = command.ExecuteReader();
 
             while (reader.Read())
@@ -37,7 +36,7 @@ namespace bazyProjektBlazor.Services
             return await Task.FromResult(response);
         }
 
-        public async Task<bool> UpdateProfile(ChangeProfileRequest request)
+        public async Task<bool> UpdateProfile(User request)
         {
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
