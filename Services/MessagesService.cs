@@ -1,4 +1,5 @@
 ﻿using bazyProjektBlazor.Auth;
+using bazyProjektBlazor.Models;
 using bazyProjektBlazor.Requests;
 using bazyProjektBlazor.Responses;
 using MySqlConnector;
@@ -8,9 +9,53 @@ namespace bazyProjektBlazor.Services
     public interface IMessagesService
     {
         public Task<AddMessageResponse> SendNewMessage(AddNewMessageRequest message);
+
+        public Task<MeetingMessage> GetMessageByID(int ID);
+
+        public Task<bool> DeleteMessageByID(int ID);
     }
-    public class MessagesService(IConfiguration configuration, ICurrentUser currentUser) : IMessagesService
+    public class MessagesService(IConfiguration configuration, IUsersService usersService, ICurrentUser currentUser) : IMessagesService
     {
+        public async Task<bool> DeleteMessageByID(int ID)
+        {
+            using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+
+            connection.Open();
+
+            using var command = new MySqlCommand("DELETE FROM meetingschats WHERE ID = @ID", connection);
+            command.Parameters.AddWithValue("@ID", ID);
+
+            if (await command.ExecuteNonQueryAsync() > 0)
+            {
+                return await Task.FromResult(true);
+            }
+            return await Task.FromResult(false);
+        }
+
+        public async Task<MeetingMessage> GetMessageByID(int ID)
+        {
+            MeetingMessage response = new();
+
+            using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+
+            connection.Open();
+
+            using var command = new MySqlCommand("SELECT meetingschats.ID, meetingschats.message, meetingschats.senderID FROM meetingschats WHERE meetingschats.ID = @ID", connection);
+            command.Parameters.AddWithValue("@ID", ID);
+
+            MySqlDataReader reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                response.ID = reader.GetInt32("ID");
+                response.Message = reader.GetString("message");
+                response.Sender = await usersService.GetUserById(reader.GetInt32("senderID"));
+                response.IsSender = reader.GetInt32("senderID") == currentUser.ID;
+            }
+
+            return await Task.FromResult(response);
+        }
+
         public async Task<AddMessageResponse> SendNewMessage(AddNewMessageRequest message)
         {
             AddMessageResponse response = new();

@@ -1,10 +1,12 @@
-﻿@page "/meeting/{messageId:int}"
+﻿@page "/meeting/{meetingID:int}"
 @inject ILoginService loginService
 @inject NavigationManager navigationManager
 @inject IMeetingsService meetingService
 @inject IMessagesService messagesService
+@inject IAttachmentsService attachmentService
 <PageTitle>Meeting Details</PageTitle>
 <Modal @ref="modal" />
+<ConfirmDialog @ref="dialog" />
 <div class="container-fluid">
     <div class="row">
         <div class="col-12 d-flex justify-content-center my-1">
@@ -70,6 +72,10 @@
                                         <h4>Message send by:</h4>
                                         <UserComponent user="message.Sender" />
                                         <p><b>Message:</b> @message.Message</p>
+                                        @if (message.IsSender)
+                                        {
+                                            <Button Color="ButtonColor.Danger" Class="mx-1 my-1" @onclick="((args) => OnClickDeleteMessage(args,message.ID))"><Icon Name="IconName.Trash" /> Delete message</Button>
+                                        }
                                     </CardBody>
                                 </Card>
 
@@ -128,6 +134,10 @@
                                                     break;
                                             }
                                         </p>
+                                        @if(attachment.IsSender)
+                                        {
+                                            <Button Color="ButtonColor.Danger" Class="mx-1 my-1" @onclick="((args) => OnClickDeleteAttachment(args,attachment.ID))"><Icon Name="IconName.Trash" /> Delete attachment</Button>
+                                        }
                                     </CardBody>
                                 </Card>
 
@@ -175,7 +185,7 @@
     private Modal modal = default!;
     private ConfirmDialog dialog = default!;
     [Parameter]
-    public int messageID { get; set; }
+    public int meetingID { get; set; }
     [Inject]
     protected ToastService toastService { get; set; }
     bool isLogged = false;
@@ -190,7 +200,7 @@
         }
         else
         {
-            meeting = await meetingService.GetMeetingByID(messageID);
+            meeting = await meetingService.GetMeetingByID(meetingID);
             if(meeting.IsCreator)
             {
                 styleClass = "col-4";
@@ -222,6 +232,68 @@
         parameters.Add("AttachmentsList", meeting.Attachments);
         parameters.Add("CloseModalCallback", EventCallback.Factory.Create<MouseEventArgs>(this, CloseModalCallback));
         await modal.ShowAsync<AddMessageAttachemntForm>(title: "New Attachment", parameters: parameters);
+    }
+
+    protected async Task OnClickDeleteMessage(EventArgs args, int ID)
+    {
+        var options = new ConfirmDialogOptions
+            {
+                YesButtonText = "OK",
+                YesButtonColor = ButtonColor.Success,
+                NoButtonText = "CANCEL",
+                NoButtonColor = ButtonColor.Danger
+            };
+
+        var confirmation = await dialog.ShowAsync(
+            title: "Are you sure you want to delete this message?",
+            message1: "Do you want to proceed?",
+        confirmDialogOptions: options);
+
+        if (confirmation)
+        {
+            bool success = await messagesService.DeleteMessageByID(ID);
+            if (success)
+            {
+                toastService.Notify(new(ToastType.Success, "Successfully deleted message"));
+                meeting.Messages.RemoveAll(m => m.ID == ID);
+                StateHasChanged();
+            }
+            else
+            {
+                toastService.Notify(new(ToastType.Danger, "Unsuccessfully deleted message"));
+            }
+        }
+    }
+
+    protected async Task OnClickDeleteAttachment(EventArgs args, int ID)
+    {
+        var options = new ConfirmDialogOptions
+            {
+                YesButtonText = "OK",
+                YesButtonColor = ButtonColor.Success,
+                NoButtonText = "CANCEL",
+                NoButtonColor = ButtonColor.Danger
+            };
+
+        var confirmation = await dialog.ShowAsync(
+            title: "Are you sure you want to delete this attachment?",
+            message1: "Do you want to proceed?",
+        confirmDialogOptions: options);
+
+        if (confirmation)
+        {
+            bool success = await attachmentService.DeleteAttachmentByID(ID);
+            if (success)
+            {
+                toastService.Notify(new(ToastType.Success, "Successfully deleted attachment"));
+                meeting.Attachments.RemoveAll(a => a.ID == ID);
+                StateHasChanged();
+            }
+            else
+            {
+                toastService.Notify(new(ToastType.Danger, "Unsuccessfully deleted attachment"));
+            }
+        }
     }
 
     protected async Task CloseModalCallback(MouseEventArgs e)

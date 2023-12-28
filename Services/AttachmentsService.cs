@@ -1,4 +1,5 @@
 ﻿using bazyProjektBlazor.Auth;
+using bazyProjektBlazor.Models;
 using bazyProjektBlazor.Requests;
 using bazyProjektBlazor.Responses;
 using MySqlConnector;
@@ -12,8 +13,12 @@ namespace bazyProjektBlazor.Services
         public Task<AddAttachmentResponse> AddNewAttachment(AddNewAttachmentRequest request);
 
         public Task<string> GetTypeByID(int ID);
+
+        public Task<MeetingAttachment> GetAttachmentByID(int ID);
+
+        public Task<bool> DeleteAttachmentByID(int ID);
     }
-    public class AttachmentsService(IConfiguration configuration, ICurrentUser currentUser) : IAttachmentsService
+    public class AttachmentsService(IConfiguration configuration, IUsersService usersService, ICurrentUser currentUser) : IAttachmentsService
     {
         public async Task<AddAttachmentResponse> AddNewAttachment(AddNewAttachmentRequest request)
         {
@@ -23,7 +28,7 @@ namespace bazyProjektBlazor.Services
 
             connetion.Open();
 
-            using var command = new MySqlCommand("INSERT INTO meetingattachments(name, typeID, meetingID, senderID) VALUES (@NAME,@TID,@MID,@SID)", connetion);
+            using var command = new MySqlCommand("INSERT INTO meetingsattachments(name, typeID, meetingID, senderID) VALUES (@NAME,@TID,@MID,@SID)", connetion);
             command.Parameters.AddWithValue("@NAME", request.Name);
             command.Parameters.AddWithValue("@TID", request.TypeOfAttachment);
             command.Parameters.AddWithValue("@MID", request.MettingID);
@@ -67,6 +72,32 @@ namespace bazyProjektBlazor.Services
             return await Task.FromResult(response);
         }
 
+        public async Task<MeetingAttachment> GetAttachmentByID(int ID)
+        {
+            MeetingAttachment response = new();
+
+            using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+
+            connection.Open();
+
+            using var command = new MySqlCommand("SELECT meetingsattachments.ID, meetingsattachments.name, typesofattachments.type, meetingsattachments.senderID FROM meetingsattachments INNER JOIN typesofattachments on meetingsattachments.typeID = typesofattachments.ID WHERE meetingsattachments.ID = @ID", connection);
+
+            command.Parameters.AddWithValue("@ID", ID);
+
+            MySqlDataReader reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                response.ID = reader.GetInt32("ID");
+                response.Name = reader.GetString("name");
+                response.Type = reader.GetString("type");
+                response.Sender = await usersService.GetUserById(reader.GetInt32("senderID"));
+                response.IsSender = reader.GetInt32("senderID") == currentUser.ID;
+            }
+
+            return await Task.FromResult(response);
+        }
+
         public async Task<string> GetTypeByID(int ID)
         {
             using var connetion = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
@@ -84,6 +115,23 @@ namespace bazyProjektBlazor.Services
             }
 
             return await Task.FromResult("");
+        }
+
+        public async Task<bool> DeleteAttachmentByID(int ID)
+        {
+            using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+
+            connection.Open();
+
+            using var command = new MySqlCommand("DELETE FROM meetingsattachments WHERE ID = @ID", connection);
+            command.Parameters.AddWithValue("@ID", ID);
+
+            if (await command.ExecuteNonQueryAsync() > 0)
+            {
+                return await Task.FromResult(true);
+            }
+            return await Task.FromResult(false);
+
         }
     }
 }

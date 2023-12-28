@@ -9,5 +9,7 @@
         public string Type { get; set; } = string.Empty;
 
         public User Sender { get; set; }
+
+        public bool IsSender { get; set; }
     }
 }

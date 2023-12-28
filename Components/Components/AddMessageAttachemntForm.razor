@@ -83,7 +83,8 @@ else
                     {
                         ID = response.ID,
                         Message = addMessage.Message,
-                        Sender = await userService.GetUserById(response.SenderID)
+                        Sender = await userService.GetUserById(response.SenderID),
+                        IsSender = true
                     });
                 addMessage.Message = "";
                 toastService.Notify(new(ToastType.Success, "Successfully added new message"));
@@ -104,7 +105,8 @@ else
                         ID = response.ID,
                         Name = addAttachment.Name,
                         Type = await attachmentsService.GetTypeByID(addAttachment.TypeOfAttachment),
-                        Sender = await userService.GetUserById(response.SenderID)
+                        Sender = await userService.GetUserById(response.SenderID),
+                        IsSender = true
                     });
                 addAttachment.TypeOfAttachment = 0;
                 addAttachment.Name = "";

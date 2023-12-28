@@ -7,5 +7,7 @@
         public string Message { get; set; } = string.Empty;
 
         public User Sender { get; set; }
+
+        public bool IsSender { get; set; }
     }
 }

@@ -32,7 +32,7 @@ namespace bazyProjektBlazor.Services
 
         public Task<bool> UpdateMeeting(CreateMeetingRequest request);
     }
-    public class MeetingsService(IConfiguration configuration, ICurrentUser currentUser, IUsersService usersService) : IMeetingsService
+    public class MeetingsService(IConfiguration configuration, ICurrentUser currentUser, IUsersService usersService, IMessagesService messagesService, IAttachmentsService attachmentsService) : IMeetingsService
     {
         public async Task<bool> CreateMeeting(CreateMeetingRequest request)
         {
@@ -179,19 +179,15 @@ namespace bazyProjektBlazor.Services
 
             messagesConnection.Open();
 
-            using var messagesCommand = new MySqlCommand("SELECT meetingschats.ID, meetingschats.message, meetingschats.senderID FROM meetingschats WHERE meetingschats.meetingID = @ID", messagesConnection);
+            using var messagesCommand = new MySqlCommand("SELECT meetingschats.ID FROM meetingschats WHERE meetingschats.meetingID = @ID", messagesConnection);
             messagesCommand.Parameters.AddWithValue("@ID", id);
 
             MySqlDataReader messagesReader = messagesCommand.ExecuteReader();
 
             while (messagesReader.Read())
             {
-                messages.Add(new()
-                {
-                    ID = messagesReader.GetInt32(0),
-                    Message = messagesReader.GetString(1),
-                    Sender = await usersService.GetUserById(messagesReader.GetInt32(2))
-                });
+                MeetingMessage message = await messagesService.GetMessageByID(messagesReader.GetInt32(0));
+                messages.Add(message);
             }
 
             List<MeetingAttachment> attachments = [];
@@ -200,7 +196,7 @@ namespace bazyProjektBlazor.Services
 
             attachmentsConnection.Open();
 
-            using var attachmentsCommand = new MySqlCommand("SELECT meetingattachments.ID, meetingattachments.name, typesofattachments.type, users.ID FROM meetingattachments INNER JOIN typesofattachments on meetingattachments.typeID = typesofattachments.ID INNER JOIN users ON meetingattachments.senderID = users.ID WHERE meetingattachments.meetingID = @ID", attachmentsConnection);
+            using var attachmentsCommand = new MySqlCommand("SELECT meetingsattachments.ID FROM meetingsattachments WHERE meetingsattachments.meetingID = @ID", attachmentsConnection);
 
             attachmentsCommand.Parameters.AddWithValue("@ID", id);
 
@@ -208,13 +204,8 @@ namespace bazyProjektBlazor.Services
 
             while (attachmentsReader.Read())
             {
-                attachments.Add(new()
-                {
-                    ID = attachmentsReader.GetInt32(0),
-                    Name = attachmentsReader.GetString(1),
-                    Type = attachmentsReader.GetString(2),
-                    Sender = await usersService.GetUserById(attachmentsReader.GetInt32(3))
-                });
+                MeetingAttachment attachment = await attachmentsService.GetAttachmentByID(attachmentsReader.GetInt32(0));
+                attachments.Add(attachment);
             }
 
             response.Members = members;
