@@ -32,7 +32,7 @@ namespace bazyProjektBlazor.Services
 			registerCommand.Parameters.AddWithValue("@firstName", request.FirstName);
 			registerCommand.Parameters.AddWithValue("@lastName", request.LastName);
 			registerCommand.Parameters.AddWithValue("@email", request.Email);
-			registerCommand.Parameters.AddWithValue("@password", HashPassword.EncryptSHA256(request.Password));
+			registerCommand.Parameters.AddWithValue("@password", Utility.EncryptSHA256(request.Password));
 
 			if (registerCommand.ExecuteNonQuery() > 0)
 			{

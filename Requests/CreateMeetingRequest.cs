@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using bazyProjektBlazor.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace bazyProjektBlazor.Requests
 {
@@ -19,7 +20,7 @@ namespace bazyProjektBlazor.Requests
 
 		public int StatusOfMeeting { get; set; } = 1;
 
-		public List<int> MembersID { get; set; }
+		public List<UserFormChange> MembersID { get; set; }
 
 	}
 }

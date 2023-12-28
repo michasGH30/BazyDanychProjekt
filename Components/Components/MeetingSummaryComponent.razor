@@ -8,13 +8,13 @@
         @switch(meetingSummary.Status)
         {
             case "scheduled":
-            <Alert Color="AlertColor.Success">@StringOperations.Capitalise(meetingSummary.Status)</Alert>
+            <Alert Color="AlertColor.Success">@Utility.Capitalise(meetingSummary.Status)</Alert>
             break;
             case "rescheduled":
-                <Alert Color="AlertColor.Warning">@StringOperations.Capitalise(meetingSummary.Status)</Alert>
+                <Alert Color="AlertColor.Warning">@Utility.Capitalise(meetingSummary.Status)</Alert>
                 break;
             case "cancelled":
-                <Alert Color="AlertColor.Danger">@StringOperations.Capitalise(meetingSummary.Status)</Alert>
+                <Alert Color="AlertColor.Danger">@Utility.Capitalise(meetingSummary.Status)</Alert>
                 break;
         }
         @if(meetingSummary.Creator)

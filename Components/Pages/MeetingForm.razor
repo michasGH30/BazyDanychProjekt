@@ -4,6 +4,7 @@
 @inject IMeetingsService meetingService
 @inject IUsersService usersService
 @inject NavigationManager navigationManager
+@attribute [StreamRendering(true)]
 
 @if(!isLogged)
 {
@@ -33,60 +34,73 @@ else
 			}
 		</div>
 		<div class="row">
-			<div class="col-md-3">
+			@if((!meetingID.HasValue && repetitions != null && types != null) || (meetingID.HasValue && repetitions != null && types != null && statuses != null))
+			{
 				<EditForm Model="request" FormName="CreateMeeting" OnValidSubmit="OnValidSubmit">
 					<DataAnnotationsValidator />
 					<ValidationSummary />
-					<div class="form-group my-2">
-						<InputText id="name" @bind-Value="request.Title" placeholder="Title" type="text" class="form-control"></InputText>
+					<div class="row">
+						<div class="col-3">
+							<div class="form-group my-2">
+								<InputText id="name" @bind-Value="request.Title" placeholder="Title" type="text" class="form-control"></InputText>
 
-					</div>
-					<div class="form-group my-2">
-						<DateInput TValue="DateOnly" @bind-Value="request.Date" Placeholder="Date" Min="@minDate" Max="@maxDate" EnableMinMax="true" />
-					</div>
-					<div class="form-group my-2">
-						<InputSelect @bind-Value="request.RepetitionOfMeeting">
-							@foreach (TypeStatusRepetitionOfMeetingResponse r in repetitions)
+							</div>
+							<div class="form-group my-2">
+								<DateInput TValue="DateOnly" @bind-Value="request.Date" Placeholder="Date" Min="@minDate" Max="@maxDate" EnableMinMax="true" />
+							</div>
+							<div class="form-group my-2">
+								<InputSelect @bind-Value="request.RepetitionOfMeeting" class="form-control">
+									@foreach (TypeStatusRepetitionOfMeetingResponse r in repetitions)
+									{
+										<option value="@r.ID">@r.Name</option>
+									}
+								</InputSelect>
+							</div>
+							<div class="form-group my-2">
+								<InputSelect @bind-Value="request.TypeOfMeeting" class="form-control">
+									@foreach (TypeStatusRepetitionOfMeetingResponse t in types)
+									{
+										<option value="@t.ID">@t.Name</option>
+									}
+								</InputSelect>
+							</div>
+							@if (meetingID.HasValue)
 							{
-								<option value="@r.ID">@r.Name</option>
+								<div class="form-group my-2">
+									<InputSelect @bind-Value="request.StatusOfMeeting" class="form-control">
+										@foreach (TypeStatusRepetitionOfMeetingResponse s in statuses)
+										{
+											<option value="@s.ID">@s.Name</option>
+										}
+									</InputSelect>
+								</div>
 							}
-						</InputSelect>
-					</div>
-					<div class="form-group my-2">
-						<InputSelect @bind-Value="request.TypeOfMeeting">
-							@foreach (TypeStatusRepetitionOfMeetingResponse t in types)
-							{
-								<option value="@t.ID">@t.Name</option>
-							}
-						</InputSelect>
-					</div>
-					@if(meetingID.HasValue)
-					{
-						<div class="form-group my-2">
-							<InputSelect @bind-Value="request.StatusOfMeeting">
-								@foreach (TypeStatusRepetitionOfMeetingResponse s in statuses)
-								{
-									<option value="@s.ID">@s.Name</option>
-								}
-							</InputSelect>
 						</div>
-					}
-					<div class="form-group my-2">
-						@foreach (UserForm u in userForms)
-						{
-							<label>
-								@u.Name <InputCheckbox @bind-Value="u.IsSelected" />
-							</label>
-
-							<br />
-						}
+						<div class="form-group my-2 col-9">
+							<div class="row">
+								@foreach (UserForm u in userForms)
+								{
+									<Card class="col-2">
+										<CardBody>
+											<label>
+												@u.Name <InputCheckbox @bind-Value="u.IsSelected" @onclick="((args)=>CheckBoxChanged(args,u.IsSelected,u.ID))" />
+											</label>
+										</CardBody>
+									</Card>
+								}
+							</div>
+						</div>
 					</div>
 					<button class="btn btn-primary">SUBMIT</button>
 				</EditForm>
-			</div>
+			}
+			else
+			{
+				<p>Loading form ...</p>
+			}
+
 		</div>
 	</div>
-	
 }
 
 @code {
@@ -104,6 +118,7 @@ else
 	[Inject]
 	public ToastService toastService { get; set; }
 	private Meeting meeting;
+	private List<UserFormChange> changesList;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -120,6 +135,7 @@ else
 			repetitions = await meetingService.GetRepetitionOfMeeting();
 			users = await usersService.GetAllUsers();
 			userForms = users.Select(user => new UserForm(user)).ToList();
+			changesList = [];
 			if(meetingID.HasValue)
 			{
 				statuses = await meetingService.GetStatusesOfMeeting();
@@ -163,9 +179,39 @@ else
 
 	}
 
+	protected void CheckBoxChanged(MouseEventArgs args, bool IsSelected, int ID)
+	{
+		var user = changesList.AsQueryable().FirstOrDefault(u => u.ID == ID);
+		if(user == null)
+		{
+			changesList.Add(new()
+				{
+					ID = ID,
+					IsSelected = !IsSelected
+				});
+		}
+		else
+		{
+			user.IsSelected = !IsSelected;
+		}
+	}
+
 	private async Task OnValidSubmit()
 	{
-		request.MembersID = userForms.Where(u => u.IsSelected).Select(u => u.ID).ToList();
+		request.MembersID = [];
+
+		foreach(var u in changesList)
+		{
+			var mem = meeting.Members.AsQueryable().Where(m => m.ID == u.ID).ToList();
+			if(mem.Count > 0 && !u.IsSelected)
+			{
+				request.MembersID.Add(u);
+			}
+			else if(mem.Count == 0 && u.IsSelected)
+			{
+				request.MembersID.Add(u);
+			}
+		}
 
 		if(meetingID.HasValue)
 		{

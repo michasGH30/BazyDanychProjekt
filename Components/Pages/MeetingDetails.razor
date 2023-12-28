@@ -31,18 +31,18 @@
                     <div class="@styleClass">
                         <p><b>Title:</b> @meeting.Title</p>
                         <p><b>Date:</b> @meeting.Date</p>
-                        <p><b>Type:</b> @StringOperations.Capitalise(meeting.TypeOfMeeting)</p>
-                        <p><b>Repetition:</b> @StringOperations.Capitalise(meeting.RepetitionOfMeeting)</p>
+                        <p><b>Type:</b> @Utility.Capitalise(meeting.TypeOfMeeting)</p>
+                        <p><b>Repetition:</b> @Utility.Capitalise(meeting.RepetitionOfMeeting)</p>
                         @switch (meeting.StatusOfMeeting)
                         {
                             case "scheduled":
-                                <Alert Color="AlertColor.Success">@StringOperations.Capitalise(meeting.StatusOfMeeting)</Alert>
+                                <Alert Color="AlertColor.Success">@Utility.Capitalise(meeting.StatusOfMeeting)</Alert>
                                 break;
                             case "rescheduled":
-                                <Alert Color="AlertColor.Warning">@StringOperations.Capitalise(meeting.StatusOfMeeting)</Alert>
+                                <Alert Color="AlertColor.Warning">@Utility.Capitalise(meeting.StatusOfMeeting)</Alert>
                                 break;
                             case "cancelled":
-                                <Alert Color="AlertColor.Danger">@StringOperations.Capitalise(meeting.StatusOfMeeting)</Alert>
+                                <Alert Color="AlertColor.Danger">@Utility.Capitalise(meeting.StatusOfMeeting)</Alert>
                                 break;
                         }
                     </div>
