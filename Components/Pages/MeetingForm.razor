@@ -49,12 +49,15 @@ else
 								<DateInput TValue="DateOnly" @bind-Value="request.Date" Placeholder="Date" Min="@minDate" Max="@maxDate" EnableMinMax="true" />
 							</div>
 							<div class="form-group my-2">
-								<InputSelect @bind-Value="request.RepetitionOfMeeting" class="form-control">
-									@foreach (TypeStatusRepetitionOfMeetingResponse r in repetitions)
-									{
-										<option value="@r.ID">@r.Name</option>
-									}
-								</InputSelect>
+								<InputTextArea @bind-Value="request.Description"></InputTextArea>
+							</div>
+							<div class="form-group my-2">
+							<InputSelect @bind-Value="request.RepetitionOfMeeting" class="form-control">
+								@foreach (TypeStatusRepetitionOfMeetingResponse r in repetitions)
+								{
+									<option value="@r.ID">@r.Name</option>
+								}
+							</InputSelect>
 							</div>
 							<div class="form-group my-2">
 								<InputSelect @bind-Value="request.TypeOfMeeting" class="form-control">
@@ -143,6 +146,8 @@ else
 				request.ID = meetingID.Value;
 				request.Title = meeting.Title;
 				request.Date = meeting.Date;
+
+				request.Description = meeting.Description.Equals("Empty description") ? null : meeting.Description;
 				foreach (var rep in repetitions)
 				{
 					if(rep.Name.Equals(meeting.RepetitionOfMeeting))
@@ -200,21 +205,20 @@ else
 	{
 		request.MembersID = [];
 
-		foreach(var u in changesList)
-		{
-			var mem = meeting.Members.AsQueryable().Where(m => m.ID == u.ID).ToList();
-			if(mem.Count > 0 && !u.IsSelected)
-			{
-				request.MembersID.Add(u);
-			}
-			else if(mem.Count == 0 && u.IsSelected)
-			{
-				request.MembersID.Add(u);
-			}
-		}
-
 		if(meetingID.HasValue)
 		{
+			foreach (var u in changesList)
+			{
+				var mem = meeting.Members.AsQueryable().Where(m => m.ID == u.ID).ToList();
+				if (mem.Count > 0 && !u.IsSelected)
+				{
+					request.MembersID.Add(u);
+				}
+				else if (mem.Count == 0 && u.IsSelected)
+				{
+					request.MembersID.Add(u);
+				}
+			}
 			var response = await meetingService.UpdateMeeting(request);
 
 			if(response)
@@ -229,6 +233,12 @@ else
 		}
 		else
 		{
+			foreach (var u in changesList)
+			{
+				if (u.IsSelected)
+					request.MembersID.Add(u);
+			}
+
 			var response = await meetingService.CreateMeeting(request);
 
 			if (response)

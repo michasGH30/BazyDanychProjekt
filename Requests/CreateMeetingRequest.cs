@@ -12,6 +12,10 @@ namespace bazyProjektBlazor.Requests
 
 		public DateOnly Date { get; set; }
 
+
+		[StringLength(512, ErrorMessage = "Description cannot be longer than 512 characters")]
+		public string? Description { get; set; }
+
 		[Range(1, int.MaxValue, ErrorMessage = "Select correct type of meeting.")]
 		public int TypeOfMeeting { get; set; }
 

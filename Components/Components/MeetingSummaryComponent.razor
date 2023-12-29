@@ -2,7 +2,7 @@
 @inject ILoginService loginService
 @inject IMeetingsService meetingService
 <ConfirmDialog @ref="dialog" />
-<Card Style="@style">
+<Card>
     <CardBody>
         <p><b>Title: </b>@meetingSummary.Title</p>
         <p><b>Date: </b>@meetingSummary.Date</p>
@@ -31,9 +31,10 @@
     private ConfirmDialog dialog = default!;
     [Parameter]
     public MeetingSummaryResponse meetingSummary { get; set; }
+    [Parameter]
+    public EventCallback<int> OnMeetingDeleted { get; set; }
     [Inject]
     protected ToastService toastService { get; set; }
-    string style = "";
     string[] roles;
 
     protected override async Task OnInitializedAsync()
@@ -77,8 +78,7 @@
             if (success)
             {
                 toastService.Notify(new(ToastType.Success, "Successfully deleted meeting"));
-                style = "display:none;";
-                StateHasChanged();
+                await OnMeetingDeleted.InvokeAsync(meetingSummary.MeetingID);
             }
             else
             {

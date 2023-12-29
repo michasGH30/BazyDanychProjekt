@@ -37,8 +37,7 @@ else
         {
             foreach(MeetingSummaryResponse response in myMeetingSummaries)
             {
-                <div class="col-4"><MeetingSummaryComponent meetingSummary="@response" /></div>
-                    
+                    <div class="col-4"><MeetingSummaryComponent meetingSummary="@response" OnMeetingDeleted="HandleMeetingDeleted" /></div>
             }
         }
         else
@@ -175,5 +174,18 @@ else
     protected void OnClickAddNewMeeting(EventArgs args)
     {
         navigationManager.NavigateTo("/meetingForm");
+    }
+
+    private void HandleMeetingDeleted(int id)
+    {
+        myMeetingSummaries.RemoveAll(m => m.MeetingID == id);
+        if(allMeetingsSummaries != null)
+            allMeetingsSummaries.RemoveAll(m => m.MeetingID == id);
+        if(meetingsSummariesFromMyDepartment != null)
+            meetingsSummariesFromMyDepartment.RemoveAll(m => m.MeetingID == id);
+        if(meetingsSummariesFromMyTeam != null)
+            meetingsSummariesFromMyTeam.RemoveAll(m => m.MeetingID == id);
+
+        StateHasChanged();
     }
 }

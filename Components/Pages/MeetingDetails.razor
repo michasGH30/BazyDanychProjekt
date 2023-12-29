@@ -33,6 +33,7 @@
                         <p><b>Title:</b> @meeting.Title</p>
                         <p><b>Date:</b> @meeting.Date</p>
                         <p><b>Type:</b> @Utility.Capitalise(meeting.TypeOfMeeting)</p>
+                        <p style="white-space: pre-line"><b>Description: </b><br/>@meeting.Description</p>
                         <p><b>Repetition:</b> @Utility.Capitalise(meeting.RepetitionOfMeeting)</p>
                         @switch (meeting.StatusOfMeeting)
                         {
@@ -203,6 +204,10 @@
         else
         {
             meeting = await meetingService.GetMeetingByID(meetingID);
+            if (meeting.Description.Equals("Empty description"))
+            {
+                meeting.Description = "";
+            }
             var rolesResponse = await loginService.GetRoles();
             roles = rolesResponse.Split(",");
             if(roles.Contains("admin"))

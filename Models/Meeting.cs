@@ -8,6 +8,8 @@
 
         public DateOnly Date { get; set; }
 
+        public string Description { get; set; } = string.Empty;
+
         public User Creator { get; set; }
 
         public bool IsCreator { get; set; }
