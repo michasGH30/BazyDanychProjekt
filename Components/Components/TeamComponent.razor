@@ -1,16 +1,17 @@
 ﻿<Card Class="my-2">
     <CardTitle>
-        <p>Team</p>
+        <p>@team.Name</p>
     </CardTitle>
     <CardBody>
-        <p><b>Team Name: </b>@team.Name</p>
         <p><b>Department Name: </b>@team.DepartmentName</p>
         <h4>Leader</h4>
         <UserComponent user="@team.Leader"/>
-        <hr class="hr" />
-        <h4>Members</h4>
-        @if (team.Members != null)
+         <Button Type="ButtonType.Button" Color="ButtonColor.Primary" @onclick="ToggleContentAsync"><Icon Name="@iconName" /> Toggle team members</Button>
+        <Collapse @ref="collapse">
+        @if (team.Members.Count > 0)
         {
+            <h4>Members</h4>
+            <hr class="hr" />
             @foreach (User member in team.Members)
             {
                 <UserComponent user="member"/>
@@ -18,12 +19,26 @@
         }
         else
         {
-            <p>This team has no members.</p>
+            <h5>This team has no members.</h5>
         }
+        </Collapse>
     </CardBody>
 </Card>
 
 @code {
     [Parameter]
     public Team team { get; set; }
+    Collapse collapse = default!;
+    private async Task ToggleContentAsync()
+    {
+        iconName = iconName == IconName.ArrowsExpand ? IconName.ArrowsCollapse : IconName.ArrowsExpand;
+        await collapse.ToggleAsync();
+
+    }
+    IconName iconName;
+    protected override Task OnInitializedAsync()
+    {
+        iconName = IconName.ArrowsExpand;
+        return base.OnInitializedAsync();
+    }
 }

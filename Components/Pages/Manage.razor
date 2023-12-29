@@ -5,6 +5,7 @@
 @inject IDepartmentService departmentsService
 @inject ITeamsService teamsService
 @inject IUsersService userService
+@attribute [StreamRendering(true)]
 <PageTitle>Manage</PageTitle>
 <Modal @ref="modal" />
 <div class="container-fluid">
@@ -63,6 +64,7 @@
                         {
                             foreach (var department in allDepartments)
                             {
+                                <hr class="hr"/>
                                 <DepartmentComponent department="department" />
                             }
                         }
@@ -73,7 +75,7 @@
                     }
                     else
                     {
-                        <p>Some error with all departments.</p>
+                        <p>Loading departments.</p>
                     }
                 </div>
                 <div class="col-3">
@@ -95,7 +97,7 @@
                     }
                     else
                     {
-                        <p>Some error with all teams.</p>
+                        <p>Loading teams.</p>
                     }
                 </div>
                 <div class="col-3">
@@ -104,10 +106,14 @@
                         <h2>All users</h2>
                         @if (allUsers.Count > 0)
                         {
-                            foreach (User user in allUsers)
-                            {
-                                <UserComponent user="user" />
-                            }
+                            <Button Type="ButtonType.Button" Color="ButtonColor.Primary" @onclick="ToggleContentAllUsersAsync"><Icon Name="@iconNameAllUsers" /> Toggle all users</Button>
+                            <Collapse @ref="collapseAllUsers">
+                                @foreach (User user in allUsers)
+                                {
+                                    <UserComponent user="user" />
+                                }
+                            </Collapse>
+                            
                         }
                         else
                         {
@@ -116,7 +122,7 @@
                     }
                     else
                     {
-                        <p>Some error with all users.</p>
+                        <p>Loading all users.</p>
                     }
                 </div>
                 <div class="col-3">
@@ -125,10 +131,13 @@
                         <h2>Free users</h2>
                         @if (freeUsers.Count > 0)
                         {
-                            foreach (User user in freeUsers)
-                            {
-                                <UserComponent user="user" />
-                            }
+                            <Button Type="ButtonType.Button" Color="ButtonColor.Primary" @onclick="ToggleContentFreeUsersAsync"><Icon Name="@iconNameFreeUsers" /> Toggle free users</Button>
+                            <Collapse @ref="collapseFreeUsers">
+                                @foreach (User user in freeUsers)
+                                {
+                                    <UserComponent user="user" />
+                                }
+                            </Collapse>
                         }
                         else
                         {
@@ -137,7 +146,7 @@
                     }
                     else
                     {
-                        <p>Some error with free users.</p>
+                        <p>Loading free users.</p>
                     }
                 </div>
             </div>
@@ -177,6 +186,11 @@
     List<User> freeUsers;
     DepartmentByIDResponse directorMyDepartment;
     Team leaderMyTeam;
+    Collapse collapseAllUsers = default!;
+    IconName iconNameAllUsers;
+    Collapse collapseFreeUsers = default!;
+    IconName iconNameFreeUsers;
+    
     protected override async Task OnInitializedAsync()
     {
         isLogged = await loginService.IsLogged();
@@ -187,6 +201,9 @@
         }
         else
         {
+
+            iconNameAllUsers = IconName.ArrowsExpand;
+            iconNameFreeUsers = IconName.ArrowsExpand;
             var response = await loginService.GetRoles();
             roles = response.Split(",");
 
@@ -212,6 +229,20 @@
                 leaderMyTeam = await teamsService.GetMyTeam();
             }
         }
+    }
+
+    private async Task ToggleContentAllUsersAsync()
+    {
+        iconNameAllUsers = iconNameAllUsers == IconName.ArrowsExpand ? IconName.ArrowsCollapse : IconName.ArrowsExpand;
+        await collapseAllUsers.ToggleAsync();
+
+    }
+
+    private async Task ToggleContentFreeUsersAsync()
+    {
+        iconNameFreeUsers = iconNameFreeUsers == IconName.ArrowsExpand ? IconName.ArrowsCollapse : IconName.ArrowsExpand;
+        await collapseFreeUsers.ToggleAsync();
+
     }
 
     protected async Task OnClickChangeProfile(EventArgs args)

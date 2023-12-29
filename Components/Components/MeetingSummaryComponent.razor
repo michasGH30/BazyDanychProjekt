@@ -1,4 +1,5 @@
 ﻿@inject NavigationManager navigationManager
+@inject ILoginService loginService
 @inject IMeetingsService meetingService
 <ConfirmDialog @ref="dialog" />
 <Card Style="@style">
@@ -33,6 +34,17 @@
     [Inject]
     protected ToastService toastService { get; set; }
     string style = "";
+    string[] roles;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await loginService.GetRoles();
+        roles = response.Split(",");
+        if(roles.Contains("admin"))
+        {
+            meetingSummary.Creator = true;
+        }
+    }
 
     protected void OnClickShowDetails(EventArgs args, int id)
     {

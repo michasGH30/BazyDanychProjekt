@@ -1,22 +1,46 @@
-﻿<div>
-    <p><b>Depatment Name: </b>@department.Department.Name</p>
-    <h4>Director</h4>
-    <UserComponent user="@department.Department.Director"/>
-    @if (department.Teams != null)
-    {
-        @foreach (Team team in department.Teams)
-        {
-            <TeamComponent team="team" />
-        }
-        <hr class="hr" />
-    }
-    else
-    {
-        <p>This department has no teams.</p>
-    }
-    <hr class="hr"/>
-</div>
+﻿<Card>
+    <CardTitle>
+        <p>@department.Department.Name</p>
+    </CardTitle>
+    <CardBody>
+        <h4>Director</h4>
+        <UserComponent user="@department.Department.Director" />
+        <Button Type="ButtonType.Button" Color="ButtonColor.Primary" @onclick="ToggleContentAsync"><Icon Name="@iconName" /> Toggle team details</Button>
+        <Collapse @ref="collapse">
+            @if (department.Teams.Count > 0)
+            {
+                <h4>Teams</h4>
+                @foreach (Team team in department.Teams)
+                {
+                    <TeamComponent team="team" />
+                    @if (department.Teams.Count > 1)
+                    {
+                        <hr class="hr" />
+                    }
+                }
+            }
+            else
+            {
+                <h5>This department has no teams.</h5>
+            }
+
+        </Collapse>
+    </CardBody>
+</Card>
 @code {
     [Parameter]
     public DepartmentByIDResponse department { get; set; }
+    Collapse collapse = default!;
+    private async Task ToggleContentAsync()
+    {
+        iconName = iconName == IconName.ArrowsExpand ? IconName.ArrowsCollapse : IconName.ArrowsExpand;
+        await collapse.ToggleAsync();
+        
+    }
+    IconName iconName;
+    protected override Task OnInitializedAsync()
+    {
+        iconName = IconName.ArrowsExpand;
+        return base.OnInitializedAsync();
+    }
 }

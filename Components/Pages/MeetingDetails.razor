@@ -4,6 +4,7 @@
 @inject IMeetingsService meetingService
 @inject IMessagesService messagesService
 @inject IAttachmentsService attachmentService
+@attribute [StreamRendering(true)]
 <PageTitle>Meeting Details</PageTitle>
 <Modal @ref="modal" />
 <ConfirmDialog @ref="dialog" />
@@ -67,7 +68,7 @@
                         {
                             foreach (MeetingMessage message in meeting.Messages)
                             {
-                                <Card>
+                                <Card Class="my-2">
                                     <CardBody>
                                         <h4>Message send by:</h4>
                                         <UserComponent user="message.Sender" />
@@ -96,7 +97,7 @@
                         {
                             foreach (MeetingAttachment attachment in meeting.Attachments)
                             {
-                                <Card>
+                                <Card Class="my-2">
                                     <CardBody>
                                         <h4>Attachment send by:</h4>
                                         <UserComponent user="attachment.Sender" />
@@ -191,6 +192,7 @@
     bool isLogged = false;
     Meeting meeting;
     string styleClass = "";
+    string[] roles;
     protected override async Task OnInitializedAsync()
     {
         isLogged = await loginService.IsLogged();
@@ -201,6 +203,14 @@
         else
         {
             meeting = await meetingService.GetMeetingByID(meetingID);
+            var rolesResponse = await loginService.GetRoles();
+            roles = rolesResponse.Split(",");
+            if(roles.Contains("admin"))
+            {
+                meeting.IsCreator = true;
+                meeting.Attachments.ForEach(a => a.IsSender = true);
+                meeting.Messages.ForEach(m => m.IsSender = true);
+            }
             if(meeting.IsCreator)
             {
                 styleClass = "col-4";

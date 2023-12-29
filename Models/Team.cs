@@ -10,7 +10,7 @@
 
         public User Leader { get; set; }
 
-        public IEnumerable<User>? Members { get; set; }
+        public List<User> Members { get; set; }
 
     }
 }

@@ -458,19 +458,13 @@ namespace bazyProjektBlazor.Services
 
 					using var deleteMembersCommand = new MySqlCommand(sql, deleteMembersConnection);
 
-					if (deleteMembersCommand.ExecuteNonQuery() > 0)
-					{
-						return await Task.FromResult(true);
-					}
-					else
+					if (deleteMembersCommand.ExecuteNonQuery() <= 0)
 					{
 						return await Task.FromResult(false);
 					}
 				}
-				else
-				{
-					return await Task.FromResult(true);
-				}
+
+				return await Task.FromResult(true);
 			}
 		}
 	}

@@ -67,11 +67,9 @@ namespace bazyProjektBlazor.Services
             connection.Open();
 
             using var command = new MySqlCommand(
-                "SELECT teams.ID, teams.name, " +
-                "users.ID, " +
+                "SELECT teams.ID, teams.name, teams.leaderID, " +
                 "departments.name " +
                 "FROM teams " +
-                "INNER JOIN users on teams.leaderID = users.ID " +
                 "INNER JOIN departments on teams.departmentID = departments.ID " +
                 "WHERE teams.ID=@ID"
                 , connection);
