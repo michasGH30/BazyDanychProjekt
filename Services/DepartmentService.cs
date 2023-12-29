@@ -5,85 +5,122 @@ using MySqlConnector;
 
 namespace bazyProjektBlazor.Services
 {
-    public interface IDepartmentService
-    {
-        public Task<List<DepartmentByIDResponse>> GetAllDepartments();
+	public interface IDepartmentService
+	{
+		public Task<List<DepartmentByIDResponse>> GetAllDepartments();
 
-        public Task<DepartmentByIDResponse> GetDepartmentByID(int id);
+		public Task<DepartmentByIDResponse> GetDepartmentByID(int id);
 
-        public Task<DepartmentByIDResponse> GetMyDepartment();
-    }
-    public class DepartmentService(IConfiguration configuration, ICurrentUser currentUser, ITeamsService teamsService, IUsersService usersService) : IDepartmentService
-    {
-        public async Task<List<DepartmentByIDResponse>> GetAllDepartments()
-        {
-            List<DepartmentByIDResponse> response = [];
-            using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            connection.Open();
+		public Task<DepartmentByIDResponse> GetMyDepartment();
 
-            using var command = new MySqlCommand(
-                 "SELECT departments.ID FROM departments", connection);
-            MySqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                var departmentByID = await GetDepartmentByID(reader.GetInt32("ID"));
-                response.Add(departmentByID);
+		public Task<List<User>> GetUsersFromMyDepartment();
+	}
+	public class DepartmentService(IConfiguration configuration, ICurrentUser currentUser, ITeamsService teamsService, IUsersService usersService) : IDepartmentService
+	{
+		public async Task<List<DepartmentByIDResponse>> GetAllDepartments()
+		{
+			List<DepartmentByIDResponse> response = [];
+			using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+			connection.Open();
 
-            }
-            return await Task.FromResult(response);
-        }
+			using var command = new MySqlCommand(
+				 "SELECT departments.ID FROM departments", connection);
+			MySqlDataReader reader = command.ExecuteReader();
+			while (reader.Read())
+			{
+				var departmentByID = await GetDepartmentByID(reader.GetInt32("ID"));
+				response.Add(departmentByID);
 
-        public async Task<DepartmentByIDResponse> GetDepartmentByID(int id)
-        {
-            DepartmentByIDResponse response = new();
-            using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            connection.Open();
-            using var command = new MySqlCommand("SELECT departments.ID, departments.name, departments.directorID FROM departments WHERE departments.ID=@ID", connection);
-            command.Parameters.AddWithValue("@ID", id);
-            MySqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                Department department = new()
-                {
-                    ID = reader.GetInt32("ID"),
-                    Name = reader.GetString("name"),
-                    Director = await usersService.GetUserById(reader.GetInt32("directorID"))
-                };
-                response.Department = department;
-                List<Team> teams = [];
-                using var teamConnection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
-                teamConnection.Open();
-                using var teamCommand = new MySqlCommand("SELECT teams.ID FROM teams WHERE teams.departmentID=@ID", teamConnection);
-                teamCommand.Parameters.AddWithValue("@ID", id);
-                MySqlDataReader teamsReader = teamCommand.ExecuteReader();
-                while (teamsReader.Read())
-                {
-                    Team team = await teamsService.GetTeamByID(teamsReader.GetInt32("ID"));
-                    teams.Add(team);
-                }
-                response.Teams = teams;
-            }
+			}
+			return await Task.FromResult(response);
+		}
 
-            return await Task.FromResult(response);
-        }
+		public async Task<DepartmentByIDResponse> GetDepartmentByID(int id)
+		{
+			DepartmentByIDResponse response = new();
+			using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+			connection.Open();
+			using var command = new MySqlCommand("SELECT departments.ID, departments.name, departments.directorID FROM departments WHERE departments.ID=@ID", connection);
+			command.Parameters.AddWithValue("@ID", id);
+			MySqlDataReader reader = command.ExecuteReader();
+			while (reader.Read())
+			{
+				Department department = new()
+				{
+					ID = reader.GetInt32("ID"),
+					Name = reader.GetString("name"),
+					Director = await usersService.GetUserById(reader.GetInt32("directorID"))
+				};
+				response.Department = department;
+				List<Team> teams = [];
+				using var teamConnection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+				teamConnection.Open();
+				using var teamCommand = new MySqlCommand("SELECT teams.ID FROM teams WHERE teams.departmentID=@ID", teamConnection);
+				teamCommand.Parameters.AddWithValue("@ID", id);
+				MySqlDataReader teamsReader = teamCommand.ExecuteReader();
+				while (teamsReader.Read())
+				{
+					Team team = await teamsService.GetTeamByID(teamsReader.GetInt32("ID"));
+					teams.Add(team);
+				}
+				response.Teams = teams;
+			}
 
-        public async Task<DepartmentByIDResponse> GetMyDepartment()
-        {
-            DepartmentByIDResponse response = new();
+			return await Task.FromResult(response);
+		}
 
-            using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+		public async Task<DepartmentByIDResponse> GetMyDepartment()
+		{
+			DepartmentByIDResponse response = new();
 
-            connection.Open();
+			using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
-            using var command = new MySqlCommand("SELECT departments.ID FROM departments WHERE departments.directorID=@ID", connection);
-            command.Parameters.AddWithValue("@ID", currentUser.ID);
-            MySqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                response = await GetDepartmentByID(reader.GetInt32("ID"));
-            }
+			connection.Open();
 
-            return await Task.FromResult(response);
-        }
-    }
+			using var command = new MySqlCommand("SELECT departments.ID FROM departments WHERE departments.directorID=@ID", connection);
+			command.Parameters.AddWithValue("@ID", currentUser.ID);
+			MySqlDataReader reader = command.ExecuteReader();
+			while (reader.Read())
+			{
+				response = await GetDepartmentByID(reader.GetInt32("ID"));
+			}
+
+			return await Task.FromResult(response);
+		}
+
+		public async Task<List<User>> GetUsersFromMyDepartment()
+		{
+			List<User> response = [];
+
+			using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+
+			connection.Open();
+
+			using var command = new MySqlCommand("SELECT teamsmembers.memberID FROM teamsmembers INNER JOIN teams ON teamsmembers.teamID = teams.ID INNER JOIN departments ON teams.departmentID = departments.ID WHERE departments.directorID = @ID", connection);
+			command.Parameters.AddWithValue("@ID", currentUser.ID);
+
+			MySqlDataReader reader = await command.ExecuteReaderAsync();
+
+			while (await reader.ReadAsync())
+			{
+				response.Add(await usersService.GetUserById(reader.GetInt32("memberID")));
+			}
+
+			using var leaderConnection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+
+			leaderConnection.Open();
+
+			using var leaderCommand = new MySqlCommand("SELECT teams.leaderID FROM teams INNER JOIN departments ON teams.departmentID = departments.ID WHERE departments.directorID = @ID", leaderConnection);
+			leaderCommand.Parameters.AddWithValue("@ID", currentUser.ID);
+
+			reader = await leaderCommand.ExecuteReaderAsync();
+
+			while (await reader.ReadAsync())
+			{
+				response.Add(await usersService.GetUserById(reader.GetInt32("leaderID")));
+			}
+
+			return await Task.FromResult(response);
+		}
+	}
 }

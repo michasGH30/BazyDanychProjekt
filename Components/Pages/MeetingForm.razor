@@ -2,6 +2,8 @@
 @page "/meetingForm/{meetingID:int}"
 @inject ILoginService loginService
 @inject IMeetingsService meetingService
+@inject IDepartmentService departmentService
+@inject ITeamsService teamsService
 @inject IUsersService usersService
 @inject NavigationManager navigationManager
 @attribute [StreamRendering(true)]
@@ -49,7 +51,7 @@ else
 								<DateInput TValue="DateOnly" @bind-Value="request.Date" Placeholder="Date" Min="@minDate" Max="@maxDate" EnableMinMax="true" />
 							</div>
 							<div class="form-group my-2">
-								<InputTextArea @bind-Value="request.Description"></InputTextArea>
+								<InputTextArea @bind-Value="request.Description" class="form-control"></InputTextArea>
 							</div>
 							<div class="form-group my-2">
 							<InputSelect @bind-Value="request.RepetitionOfMeeting" class="form-control">
@@ -78,23 +80,63 @@ else
 									</InputSelect>
 								</div>
 							}
+							<button class="btn btn-primary">SUBMIT</button>
 						</div>
 						<div class="form-group my-2 col-9">
 							<div class="row">
-								@foreach (UserForm u in userForms)
-								{
-									<Card class="col-2">
-										<CardBody>
-											<label>
-												@u.Name <InputCheckbox @bind-Value="u.IsSelected" @onclick="((args)=>CheckBoxChanged(args,u.IsSelected,u.ID))" />
-											</label>
-										</CardBody>
-									</Card>
-								}
+								<Tabs>
+									@if(roles.Contains("director"))
+									{
+										<Tab Title="Users from my department" IsActive="true">
+											<Content>
+												@foreach (UserForm u in myDepartmentUserForms)
+												{
+													<Card>
+														<CardBody>
+															<label>
+																@u.Name <InputCheckbox @bind-Value="u.IsSelected" @onclick="((args)=>CheckBoxChanged(args,u.IsSelected,u.ID))" />
+															</label>
+														</CardBody>
+													</Card>
+												}
+											</Content>
+										</Tab>
+									}
+									@if(roles.Contains("leader") || (roles.Contains("user") && !roles.Contains("admin")) && !roles.Contains("director"))
+									{
+										<Tab Title="Users from my team" IsActive="true">
+											<Content>
+												@foreach (UserForm u in myTeamUserForms)
+												{
+													<Card>
+														<CardBody>
+															<label>
+																@u.Name <InputCheckbox @bind-Value="u.IsSelected" @onclick="((args)=>CheckBoxChanged(args,u.IsSelected,u.ID))" />
+															</label>
+														</CardBody>
+													</Card>
+												}
+											</Content>
+										</Tab>
+									}
+									<Tab Title="All users" IsActive="@allUsersIsActive">
+										<Content>
+											@foreach (UserForm u in allUserForms)
+											{
+												<Card>
+													<CardBody>
+														<label>
+															@u.Name <InputCheckbox @bind-Value="u.IsSelected" @onclick="((args)=>CheckBoxChanged(args,u.IsSelected,u.ID))" />
+														</label>
+													</CardBody>
+												</Card>
+											}
+										</Content>
+									</Tab>
+								</Tabs>
 							</div>
 						</div>
 					</div>
-					<button class="btn btn-primary">SUBMIT</button>
 				</EditForm>
 			}
 			else
@@ -117,11 +159,15 @@ else
 	private List<TypeStatusRepetitionOfMeetingResponse> statuses;
 	private bool isLogged = false;
 	private List<User> users;
-	private List<UserForm> userForms = [];
+	private List<UserForm> allUserForms = [];
+	private List<UserForm> myDepartmentUserForms = [];
+	private List<UserForm> myTeamUserForms = [];
 	[Inject]
 	public ToastService toastService { get; set; }
 	private Meeting meeting;
-	private List<UserFormChange> changesList;
+	private List<UserFormChange> usersChangesList;
+	string[] roles;
+	bool allUsersIsActive;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -132,13 +178,40 @@ else
 		}
 		else
 		{
+			var rolesResponse = await loginService.GetRoles();
+			roles = rolesResponse.Split(",");
+			allUsersIsActive = roles.Contains("admin");
 			minDate = DateOnly.FromDateTime(DateTime.Now.AddYears(-1));
 			maxDate = DateOnly.FromDateTime(DateTime.Now.AddYears(1));
 			types = await meetingService.GetTypesOfMeeting();
 			repetitions = await meetingService.GetRepetitionOfMeeting();
 			users = await usersService.GetAllUsers();
-			userForms = users.Select(user => new UserForm(user)).ToList();
-			changesList = [];
+			usersChangesList = [];
+			allUserForms = users.Select(user => new UserForm(user)).ToList();
+			if(roles.Contains("director"))
+			{
+				var usersFromMyDepartment = await departmentService.GetUsersFromMyDepartment();
+				myDepartmentUserForms = usersFromMyDepartment.Select(user => new UserForm(user)).ToList();
+				foreach (var u in myDepartmentUserForms)
+				{
+					if(allUserForms.Contains(u))
+					{
+						allUserForms.Remove(u);
+					}
+				}
+			}
+			else if (roles.Contains("leader") || (roles.Contains("user") && !roles.Contains("admin")) && !roles.Contains("director"))
+			{
+				var usersFromMyTeam = roles.Contains("leader")? await teamsService.GetMembersLeader(): await teamsService.GetMembersMember();
+				myTeamUserForms = usersFromMyTeam.Select(user => new UserForm(user)).ToList();
+				foreach (var u in myTeamUserForms)
+				{
+					if (allUserForms.Contains(u))
+					{
+						allUserForms.Remove(u);
+					}
+				}
+			}
 			if(meetingID.HasValue)
 			{
 				statuses = await meetingService.GetStatusesOfMeeting();
@@ -169,13 +242,40 @@ else
 						request.StatusOfMeeting = status.ID;
 					}
 				}
-				foreach(UserForm userForm in userForms)
+
+				foreach (UserForm allUserForm in allUserForms)
 				{
-					foreach(User user in meeting.Members)
+					foreach (User user in meeting.Members)
 					{
-						if(userForm.ID == user.ID)
+						if (allUserForm.ID == user.ID)
 						{
-							userForm.IsSelected = true;
+							allUserForm.IsSelected = true;
+						}
+					}
+				}
+				if(roles.Contains("director"))
+				{
+					foreach(UserForm userForm in myDepartmentUserForms)
+					{
+						foreach(User user in meeting.Members)
+						{
+							if(userForm.ID == user.ID)
+							{
+								userForm.IsSelected = true;
+							}
+						}
+					}
+				}
+				else if (roles.Contains("leader") || (roles.Contains("user") && !roles.Contains("admin")) && !roles.Contains("director"))
+				{
+					foreach(UserForm userForm in myTeamUserForms)
+					{
+						foreach(User user in meeting.Members)
+						{
+							if(userForm.ID == user.ID)
+							{
+								userForm.IsSelected = true;
+							}
 						}
 					}
 				}
@@ -186,10 +286,10 @@ else
 
 	protected void CheckBoxChanged(MouseEventArgs args, bool IsSelected, int ID)
 	{
-		var user = changesList.AsQueryable().FirstOrDefault(u => u.ID == ID);
+		var user = usersChangesList.AsQueryable().FirstOrDefault(u => u.ID == ID);
 		if(user == null)
 		{
-			changesList.Add(new()
+			usersChangesList.Add(new()
 				{
 					ID = ID,
 					IsSelected = !IsSelected
@@ -207,7 +307,7 @@ else
 
 		if(meetingID.HasValue)
 		{
-			foreach (var u in changesList)
+			foreach (var u in usersChangesList)
 			{
 				var mem = meeting.Members.AsQueryable().Where(m => m.ID == u.ID).ToList();
 				if (mem.Count > 0 && !u.IsSelected)
@@ -233,7 +333,7 @@ else
 		}
 		else
 		{
-			foreach (var u in changesList)
+			foreach (var u in usersChangesList)
 			{
 				if (u.IsSelected)
 					request.MembersID.Add(u);
@@ -254,7 +354,7 @@ else
 				request.RepetitionOfMeeting = 0;
 				request.TypeOfMeeting = 0;
 				request.MembersID = [];
-				userForms.ForEach(u => u.IsSelected = false);
+				allUserForms.ForEach(u => u.IsSelected = false);
 			}
 		}
 
