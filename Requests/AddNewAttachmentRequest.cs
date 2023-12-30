@@ -4,6 +4,7 @@ namespace bazyProjektBlazor.Requests
 {
     public class AddNewAttachmentRequest
     {
+        public int ID { get; set; }
         public int MettingID { get; set; }
 
         [Required(ErrorMessage = "Name is required")]

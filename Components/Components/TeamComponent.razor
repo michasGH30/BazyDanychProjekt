@@ -5,22 +5,22 @@
     <CardBody>
         <p><b>Department Name: </b>@team.DepartmentName</p>
         <h4>Leader</h4>
-        <UserComponent user="@team.Leader"/>
-         <Button Type="ButtonType.Button" Color="ButtonColor.Primary" @onclick="ToggleContentAsync"><Icon Name="@iconName" /> Toggle team members</Button>
+        <UserComponent user="@team.Leader" />
+        <Button Type="ButtonType.Button" Color="ButtonColor.Primary" @onclick="ToggleContentAsync"><Icon Name="@iconName" /> Toggle team members</Button>
         <Collapse @ref="collapse">
-        @if (team.Members.Count > 0)
-        {
-            <h4>Members</h4>
-            <hr class="hr" />
-            @foreach (User member in team.Members)
+            @if (team.Members.Count > 0)
             {
-                <UserComponent user="member"/>
+                <h4>Members</h4>
+                <hr class="hr" />
+                @foreach (User member in team.Members)
+                {
+                    <UserComponent user="member" />
+                }
             }
-        }
-        else
-        {
-            <h5>This team has no members.</h5>
-        }
+            else
+            {
+                <h5>This team has no members.</h5>
+            }
         </Collapse>
     </CardBody>
 </Card>

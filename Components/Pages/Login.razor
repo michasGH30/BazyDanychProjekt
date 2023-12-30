@@ -4,46 +4,46 @@
 
 <PageTitle>Login</PageTitle>
 <div class="container-fluid">
-	<div class="row">
-		<h1>Login</h1>
-	</div>
-	<div class="row">
-		<div class="col-3">
-			<EditForm Model="loginModel" FormName="LoginForm" OnValidSubmit="OnValidSubmit">
-				<DataAnnotationsValidator />
-				<ValidationSummary />
-				<div class="form-group my-2">
-					<InputText id="email" @bind-Value="loginModel.Email" placeholder="Enter Email" type="email" class="form-control"></InputText>
+    <div class="row">
+        <h1>Login</h1>
+    </div>
+    <div class="row">
+        <div class="col-3">
+            <EditForm Model="loginModel" FormName="LoginForm" OnValidSubmit="OnValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="form-group my-2">
+                    <InputText id="email" @bind-Value="loginModel.Email" placeholder="Enter Email" type="email" class="form-control"></InputText>
 
-				</div>
-				<div class="form-group my-2">
-					<InputText id="password" @bind-Value="loginModel.Password" placeholder="Enter Password" type="password" class="form-control"></InputText>
+                </div>
+                <div class="form-group my-2">
+                    <InputText id="password" @bind-Value="loginModel.Password" placeholder="Enter Password" type="password" class="form-control"></InputText>
 
-				</div>
-				<button class="btn btn-primary">SUBMIT</button>
-			</EditForm>
-		</div>
-	</div>
+                </div>
+                <button class="btn btn-primary">SUBMIT</button>
+            </EditForm>
+        </div>
+    </div>
 </div>
 
 @code {
 
-	[Inject] protected ToastService ToastService { get; set; }
+    [Inject] protected ToastService ToastService { get; set; }
 
-	LoginRequest loginModel = new LoginRequest();
+    LoginRequest loginModel = new LoginRequest();
 
-	private async Task OnValidSubmit()
-	{
-		var response = await loginService.Login(loginModel);
-		if(response)
-		{
-			navigationManager.NavigateTo("/");
-		}
-		else
-		{
-			loginModel.Email = "";
-			loginModel.Password = "";
-			ToastService.Notify(new(ToastType.Danger, $"There was an error with logging in, try again later"));
-		}
-	}
+    private async Task OnValidSubmit()
+    {
+        var response = await loginService.Login(loginModel);
+        if (response)
+        {
+            navigationManager.NavigateTo("/");
+        }
+        else
+        {
+            loginModel.Email = "";
+            loginModel.Password = "";
+            ToastService.Notify(new(ToastType.Danger, $"There was an error with logging in, try again later"));
+        }
+    }
 }

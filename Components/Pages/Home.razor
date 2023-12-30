@@ -10,123 +10,123 @@
             <h1>Home</h1>
         </div>
     </div>
-    
-@if (!isLogged)
-{
-    <div class="row">
-        <div class="col-12 d-flex justify-content-center my-1">
-            <p>Loading...</p>
+
+    @if (!isLogged)
+    {
+        <div class="row">
+            <div class="col-12 d-flex justify-content-center my-1">
+                <p>Loading...</p>
+            </div>
         </div>
-    </div>
-    
-}
-else
-{
-    <div class="d-grid gap-2 col-6 mx-auto mt-2 my-1">
-        <Button Color="ButtonColor.Success" @onclick="OnClickAddNewMeeting"><Icon Name="IconName.Plus"></Icon>Add new meeting</Button>
-    </div>
-   
-    <!-- all users receive summary of meetings of which they are creators or members -->
-    <div class="row">
-        <div class="col-12 d-flex justify-content-center my-1">
-            <h2>My meetings</h2>
+
+    }
+    else
+    {
+        <div class="d-grid gap-2 col-6 mx-auto mt-2 my-1">
+            <Button Color="ButtonColor.Success" @onclick="OnClickAddNewMeeting"><Icon Name="IconName.Plus"></Icon>Add new meeting</Button>
         </div>
-    </div>
-    <div class="row">
-        @if(myMeetingSummaries.Count > 0)
-        {
-            foreach(MeetingSummaryResponse response in myMeetingSummaries)
+
+        <!-- all users receive summary of meetings of which they are creators or members -->
+        <div class="row">
+            <div class="col-12 d-flex justify-content-center my-1">
+                <h2>My meetings</h2>
+            </div>
+        </div>
+        <div class="row">
+            @if (myMeetingSummaries.Count > 0)
             {
+                foreach (MeetingSummaryResponse response in myMeetingSummaries)
+                {
                     <div class="col-4"><MeetingSummaryComponent meetingSummary="@response" OnMeetingDeleted="HandleMeetingDeleted" /></div>
+                }
             }
-        }
-        else
+            else
+            {
+                <div class="col-12 d-flex justify-content-center"><p>You don't have any meetings :(</p></div>
+            }
+        </div>
+
+
+        <!-- admin receive summary of all meetings -->
+        if (roles.Contains("admin"))
         {
-            <div class="col-12 d-flex justify-content-center"><p>You don't have any meetings :(</p></div>
-        }
-    </div>
-    
-
-    <!-- admin receive summary of all meetings -->
-    if(roles.Contains("admin"))
-    {
-        <hr class="hr" />
-        <div class="row">
-            <div class="col-12 d-flex justify-content-center my-1">
-                <h2>Admin view: all meetings</h2>
-            </div>
-        </div>
-        <div class="row">
-            @if (allMeetingsSummaries.Count > 0)
-            {
-                @foreach (MeetingSummaryResponse response in allMeetingsSummaries)
-                {
-                    <div class="col-2">
-                        <MeetingSummaryComponent meetingSummary="@response" />
-                    </div>
-                    }
-                }
-            else
-            {
-                <div class="col-12 d-flex justify-content-center"><p>There are no meetings in the database</p></div>
-            }
-        </div>
-        
-    }
-
-    <!-- director receive summary of meetings which creator or member are users from teams which are in his department-->
-    if (roles.Contains("director"))
-    {
-        <hr class="hr" />
-        <div class="row">
-            <div class="col-12 d-flex justify-content-center my-1">
-                <h2>Director view: meetings from my department</h2>
-            </div>
-        </div>
-        <div class="row">
-            @if (meetingsSummariesFromMyDepartment.Count > 0)
-            {
-                @foreach (MeetingSummaryResponse response in meetingsSummariesFromMyDepartment)
-                {
-                    <div class="col-4">
-                        <MeetingSummaryComponent meetingSummary="@response" />
-                    </div>
-                    }
-                }
-            else
-            {
-                <div class="col-12 d-flex justify-content-center"><p>There are no meetings in your department</p></div>
-            }
-        </div>
-       
-    }
-
-    <!-- leader receive summary of meetings which creator or member are users from his team -->
-    if (roles.Contains("leader"))
-    {
-        <hr class="hr" />
-        <div class="row">
-            <div class="col-12 d-flex justify-content-center my-1">
-                <h2>Leader view: meetings from my team</h2>
-            </div>
-        </div>
+            <hr class="hr" />
             <div class="row">
-            @if (meetingsSummariesFromMyTeam.Count > 0)
-            {
-                @foreach (MeetingSummaryResponse response in meetingsSummariesFromMyTeam)
+                <div class="col-12 d-flex justify-content-center my-1">
+                    <h2>Admin view: all meetings</h2>
+                </div>
+            </div>
+            <div class="row">
+                @if (allMeetingsSummaries.Count > 0)
                 {
-                    <div class="col-4">
-                        <MeetingSummaryComponent meetingSummary="@response" />
-                    </div>
+                    @foreach (MeetingSummaryResponse response in allMeetingsSummaries)
+                    {
+                        <div class="col-2">
+                            <MeetingSummaryComponent meetingSummary="@response" />
+                        </div>
+                    }
                 }
-            }
-            else
-            {
-                <div class="col-12 d-flex justify-content-center"><p>There are no meetings in your team</p></div>
-            }
-        </div>
+                else
+                {
+                    <div class="col-12 d-flex justify-content-center"><p>There are no meetings in the database</p></div>
+                }
+            </div>
+
+        }
+
+        <!-- director receive summary of meetings which creator or member are users from teams which are in his department-->
+        if (roles.Contains("director"))
+        {
+            <hr class="hr" />
+            <div class="row">
+                <div class="col-12 d-flex justify-content-center my-1">
+                    <h2>Director view: meetings from my department</h2>
+                </div>
+            </div>
+            <div class="row">
+                @if (meetingsSummariesFromMyDepartment.Count > 0)
+                {
+                    @foreach (MeetingSummaryResponse response in meetingsSummariesFromMyDepartment)
+                    {
+                        <div class="col-4">
+                            <MeetingSummaryComponent meetingSummary="@response" />
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12 d-flex justify-content-center"><p>There are no meetings in your department</p></div>
+                }
+            </div>
+
+        }
+
+        <!-- leader receive summary of meetings which creator or member are users from his team -->
+        if (roles.Contains("leader"))
+        {
+            <hr class="hr" />
+            <div class="row">
+                <div class="col-12 d-flex justify-content-center my-1">
+                    <h2>Leader view: meetings from my team</h2>
+                </div>
+            </div>
+            <div class="row">
+                @if (meetingsSummariesFromMyTeam.Count > 0)
+                {
+                    @foreach (MeetingSummaryResponse response in meetingsSummariesFromMyTeam)
+                    {
+                        <div class="col-4">
+                            <MeetingSummaryComponent meetingSummary="@response" />
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12 d-flex justify-content-center"><p>There are no meetings in your team</p></div>
+                }
+            </div>
+        }
     }
-}
 
 </div>
 @code
@@ -154,17 +154,17 @@ else
 
             myMeetingSummaries = await meetingService.GetMyMeetingSummaries();
 
-            if(roles.Contains("admin"))
+            if (roles.Contains("admin"))
             {
                 allMeetingsSummaries = await meetingService.GetAllMeetingsSummaries();
             }
 
-            if(roles.Contains("director"))
+            if (roles.Contains("director"))
             {
                 meetingsSummariesFromMyDepartment = await meetingService.GetMeetingsSummariesFromMyDepartment();
             }
 
-            if(roles.Contains("leader"))
+            if (roles.Contains("leader"))
             {
                 meetingsSummariesFromMyTeam = await meetingService.GetMeetingsSummariesFromMyTeam();
             }
@@ -179,11 +179,11 @@ else
     private void HandleMeetingDeleted(int id)
     {
         myMeetingSummaries.RemoveAll(m => m.MeetingID == id);
-        if(allMeetingsSummaries != null)
+        if (allMeetingsSummaries != null)
             allMeetingsSummaries.RemoveAll(m => m.MeetingID == id);
-        if(meetingsSummariesFromMyDepartment != null)
+        if (meetingsSummariesFromMyDepartment != null)
             meetingsSummariesFromMyDepartment.RemoveAll(m => m.MeetingID == id);
-        if(meetingsSummariesFromMyTeam != null)
+        if (meetingsSummariesFromMyTeam != null)
             meetingsSummariesFromMyTeam.RemoveAll(m => m.MeetingID == id);
 
         StateHasChanged();

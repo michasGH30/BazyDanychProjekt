@@ -6,11 +6,11 @@
     <CardBody>
         <p><b>Title: </b>@meetingSummary.Title</p>
         <p><b>Date: </b>@meetingSummary.Date</p>
-        @switch(meetingSummary.Status)
+        @switch (meetingSummary.Status)
         {
             case "scheduled":
-            <Alert Color="AlertColor.Success">@Utility.Capitalise(meetingSummary.Status)</Alert>
-            break;
+                <Alert Color="AlertColor.Success">@Utility.Capitalise(meetingSummary.Status)</Alert>
+                break;
             case "rescheduled":
                 <Alert Color="AlertColor.Warning">@Utility.Capitalise(meetingSummary.Status)</Alert>
                 break;
@@ -18,12 +18,12 @@
                 <Alert Color="AlertColor.Danger">@Utility.Capitalise(meetingSummary.Status)</Alert>
                 break;
         }
-        @if(meetingSummary.Creator)
+        @if (meetingSummary.Creator)
         {
-            <Button Color="ButtonColor.Warning" @onclick="((args) => OnClickUpdate(args,meetingSummary.MeetingID))" Class="mx-1 my-1"><Icon Name="IconName.Pencil"/> Modify</Button>
-            <Button Color="ButtonColor.Danger" @onclick="((args) => OnCLickDelete(args,meetingSummary.MeetingID))" Class="mx-1 my-1"><Icon Name="IconName.Trash"/> Delete</Button>
+            <Button Color="ButtonColor.Warning" @onclick="((args) => OnClickUpdate(args,meetingSummary.MeetingID))" Class="mx-1 my-1"><Icon Name="IconName.Pencil" /> Modify</Button>
+            <Button Color="ButtonColor.Danger" @onclick="((args) => OnCLickDelete(args,meetingSummary.MeetingID))" Class="mx-1 my-1"><Icon Name="IconName.Trash" /> Delete</Button>
         }
-        <Button Color="ButtonColor.Primary" @onclick="((args) => OnClickShowDetails(args,meetingSummary.MeetingID))" Class="mx-1 my-1"><Icon Name="IconName.Receipt"/> See details</Button>
+        <Button Color="ButtonColor.Primary" @onclick="((args) => OnClickShowDetails(args,meetingSummary.MeetingID))" Class="mx-1 my-1"><Icon Name="IconName.Receipt" /> See details</Button>
     </CardBody>
 </Card>
 
@@ -41,7 +41,7 @@
     {
         var response = await loginService.GetRoles();
         roles = response.Split(",");
-        if(roles.Contains("admin"))
+        if (roles.Contains("admin"))
         {
             meetingSummary.Creator = true;
         }
@@ -85,6 +85,6 @@
                 toastService.Notify(new(ToastType.Danger, "Unsuccessfully deleted meeting"));
             }
         }
-        
+
     }
 }

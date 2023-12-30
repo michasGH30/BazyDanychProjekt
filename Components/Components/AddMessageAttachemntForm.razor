@@ -2,28 +2,34 @@
 @inject IMessagesService messagedService
 @inject IUsersService userService
 
-@if(IsMessage)
+@if (IsMessage)
 {
     <EditForm FormName="AddNewMessage" Model="@addMessage" OnValidSubmit="OnValidSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-    <div class="form-group my-2">
-        <InputText id="message" type="text" class="form-control" @bind-Value="addMessage.Message" placeholder="Enter your message"></InputText>
-    </div>
-    <button class="btn btn-success"><Icon Name="IconName.Plus"/> Add</button>
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="form-group my-2">
+            <InputText id="message" type="text" class="form-control" @bind-Value="addMessage.Message" placeholder="Enter your message"></InputText>
+        </div>
+        @if (MessageID != null || AttachmentID != null)
+        {
+            <button class="btn btn-warning"><Icon Name="IconName.Pencil" /> Modify</button>
+        }
+        else
+        {
+            <button class="btn btn-success"><Icon Name="IconName.Plus" /> Add</button>
+        }
     </EditForm>
 }
 else
 {
-
-    <EditForm FormName="AddNewAttachment" Model="@addAttachment" OnValidSubmit="OnValidSubmit">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-        <div class="form-group my-2">
-            <InputText id="name" type="text" class="form-control" @bind-Value="addAttachment.Name" placeholder="Enter attachment name"></InputText>
-        </div>
-        @if(typesOfAttachments != null)
-        {
+    @if (typesOfAttachments.Count > 0)
+    {
+        <EditForm FormName="AddNewAttachment" Model="@addAttachment" OnValidSubmit="OnValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="form-group my-2">
+                <InputText id="name" type="text" class="form-control" @bind-Value="addAttachment.Name" placeholder="Enter attachment name"></InputText>
+            </div>
             <div class="form-group my-2">
                 <InputSelect @bind-Value="addAttachment.TypeOfAttachment" class="form-control">
                     <option value="0">---</option>
@@ -33,11 +39,16 @@ else
                     }
                 </InputSelect>
             </div>
-        }
-        <button class="btn btn-success"><Icon Name="IconName.Plus" /> Add</button>
-    </EditForm>
-    
-    
+            @if (MessageID != null || AttachmentID != null)
+            {
+                <button class="btn btn-warning"><Icon Name="IconName.Pencil" /> Modify</button>
+            }
+            else
+            {
+                <button class="btn btn-success"><Icon Name="IconName.Plus" /> Add</button>
+            }
+        </EditForm>
+    }
 }
 
 
@@ -64,64 +75,96 @@ else
     [Parameter]
     public List<MeetingAttachment> AttachmentsList { get; set; }
 
+    [Parameter]
+    public int? MessageID { get; set; }
+
+    [Parameter]
+    public string? Message { get; set; }
+
+    [Parameter]
+    public int? AttachmentID { get; set; }
+
+    [Parameter]
+    public string? AttachmentName { get; set; }
+
+    [Parameter]
+    public int? TypeOfAttachment { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         typesOfAttachments = await attachmentsService.GetAttachmentsTypes();
-        if(IsMessage)
-        {
-            addMessage.MeetingID = MeetingID;
-        }
-        else
-        {
-            addAttachment.MettingID = MeetingID;
-        }
+        addMessage.MeetingID = MeetingID;
+        addMessage.Message = Message ?? string.Empty;
+        addMessage.ID = MessageID ?? 0;
 
+        addAttachment.MettingID = MeetingID;
+        addAttachment.Name = AttachmentName ?? string.Empty;
+        addAttachment.TypeOfAttachment = TypeOfAttachment ?? 0;
+        addAttachment.ID = AttachmentID ?? 0;
     }
 
     private async Task OnValidSubmit()
     {
-        if(IsMessage)
+        if (IsMessage)
         {
-            var response = await messagedService.SendNewMessage(addMessage);
-            if(response.IsSuccess)
+            var response = MessageID == null ? await messagedService.SendNewMessage(addMessage) : await messagedService.UpdateMessage(addMessage);
+            if (response.IsSuccess)
             {
-                MessagesList.Add(new()
-                    {
-                        ID = response.ID,
-                        Message = addMessage.Message,
-                        Sender = await userService.GetUserById(response.SenderID),
-                        IsSender = true
-                    });
-                addMessage.Message = "";
-                toastService.Notify(new(ToastType.Success, "Successfully added new message"));
+                if (MessageID == null)
+                {
+                    MessagesList.Add(new()
+                        {
+                            ID = response.ID,
+                            Message = addMessage.Message,
+                            Sender = await userService.GetUserById(response.SenderID),
+                            IsSender = true
+                        });
+                }
+                else
+                {
+                    MessagesList.First(m => m.ID == response.ID).Message = addMessage.Message;
+                }
+
+                addMessage.Message = string.Empty;
+                toastService.Notify(new(ToastType.Success, MessageID == null ? "Successfully added new message" : "Successfully modified message"));
                 await CloseModalCallback.InvokeAsync();
             }
             else
             {
-                toastService.Notify(new(ToastType.Danger, "Unsuccessfully added new message"));
+                toastService.Notify(new(ToastType.Danger, MessageID == null ? "Unsuccessfully added new message" : "Unsuccessfully modified message"));
             }
         }
         else
         {
-            var response = await attachmentsService.AddNewAttachment(addAttachment);
-            if(response.IsSuccess)
+            var response = AttachmentID == null ? await attachmentsService.AddNewAttachment(addAttachment) : await attachmentsService.UpdateAttachment(addAttachment);
+            if (response.IsSuccess)
             {
-                AttachmentsList.Add(new()
-                    {
-                        ID = response.ID,
-                        Name = addAttachment.Name,
-                        Type = await attachmentsService.GetTypeByID(addAttachment.TypeOfAttachment),
-                        Sender = await userService.GetUserById(response.SenderID),
-                        IsSender = true
-                    });
+                if (AttachmentID == null)
+                {
+                    AttachmentsList.Add(new()
+                        {
+                            ID = response.ID,
+                            Name = addAttachment.Name,
+                            Type = await attachmentsService.GetTypeByID(addAttachment.TypeOfAttachment),
+                            Sender = await userService.GetUserById(response.SenderID),
+                            IsSender = true
+                        });
+                }
+                else
+                {
+                    var change = AttachmentsList.First(a => a.ID == response.ID);
+                    change.Name = addAttachment.Name;
+                    change.Type = await attachmentsService.GetTypeByID(addAttachment.TypeOfAttachment);
+                }
+
                 addAttachment.TypeOfAttachment = 0;
                 addAttachment.Name = "";
-                toastService.Notify(new(ToastType.Success, "Successfully added new attachment"));
+                toastService.Notify(new(ToastType.Success, AttachmentID == null ? "Successfully added new attachment" : "Successfully modified attachment"));
                 await CloseModalCallback.InvokeAsync();
             }
             else
             {
-                toastService.Notify(new(ToastType.Danger, "Unsuccessfully added new attachment"));
+                toastService.Notify(new(ToastType.Danger, AttachmentID == null ? "Unsuccessfully added new attachment" : "Unsuccessfully modified attachment"));
             }
         }
     }

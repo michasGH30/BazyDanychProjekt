@@ -5,30 +5,30 @@
 <PageTitle>Registration</PageTitle>
 
 <div class="container-fluid">
-	<div class="row">
-		<h1>Registration</h1>
-	</div>
-	<div class="row">
-		<div class="col-3">
-			<EditForm Model="registrationModel" FormName="RegistrationForm" OnValidSubmit="OnValidSubmit">
-				<DataAnnotationsValidator />
-				<ValidationSummary />
-				<div class="form-group my-2">
-					<InputText id="firstName" @bind-Value="registrationModel.FirstName" placeholder="Enter First name" class="form-control"></InputText>
-				</div>
-				<div class="form-group my-2">
-					<InputText id="lastName" @bind-Value="registrationModel.LastName" placeholder="Enter Last name" class="form-control"></InputText>
-				</div>
-				<div class="form-group my-2">
-					<InputText id="email" @bind-Value="registrationModel.Email" placeholder="Enter email" type="email" class="form-control"></InputText>
-				</div>
-				<div class="form-group my-2">
-					<InputText id="password" @bind-Value="registrationModel.Password" placeholder="Enter password" type="password" class="form-control"></InputText>
-				</div>
-				<button class="btn btn-primary">SUBMIT</button>
-			</EditForm>
-		</div>
-	</div>
+    <div class="row">
+        <h1>Registration</h1>
+    </div>
+    <div class="row">
+        <div class="col-3">
+            <EditForm Model="registrationModel" FormName="RegistrationForm" OnValidSubmit="OnValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="form-group my-2">
+                    <InputText id="firstName" @bind-Value="registrationModel.FirstName" placeholder="Enter First name" class="form-control"></InputText>
+                </div>
+                <div class="form-group my-2">
+                    <InputText id="lastName" @bind-Value="registrationModel.LastName" placeholder="Enter Last name" class="form-control"></InputText>
+                </div>
+                <div class="form-group my-2">
+                    <InputText id="email" @bind-Value="registrationModel.Email" placeholder="Enter email" type="email" class="form-control"></InputText>
+                </div>
+                <div class="form-group my-2">
+                    <InputText id="password" @bind-Value="registrationModel.Password" placeholder="Enter password" type="password" class="form-control"></InputText>
+                </div>
+                <button class="btn btn-primary">SUBMIT</button>
+            </EditForm>
+        </div>
+    </div>
 </div>
 
 
@@ -36,27 +36,27 @@
 
 @code {
 
-	[Inject] protected ToastService ToastService { get; set; }
+    [Inject] protected ToastService ToastService { get; set; }
 
-	RegistrationRequest registrationModel = new RegistrationRequest();
+    RegistrationRequest registrationModel = new RegistrationRequest();
 
-	private async Task OnValidSubmit()
-	{
+    private async Task OnValidSubmit()
+    {
 
-		int response = await registrationService.Register(registrationModel);
+        int response = await registrationService.Register(registrationModel);
 
-		if(response == 0)
-		{
-			navigationManager.NavigateTo("/");
-		}
-		else if(response == 1)
-		{
-			registrationModel.Email = "";
-			ToastService.Notify(new(ToastType.Danger, $"This email is already taken"));
-		}
-		else
-		{
-			ToastService.Notify(new(ToastType.Danger, $"There was an error with registration, try again later"));
-		}
-	}
+        if (response == 0)
+        {
+            navigationManager.NavigateTo("/");
+        }
+        else if (response == 1)
+        {
+            registrationModel.Email = "";
+            ToastService.Notify(new(ToastType.Danger, $"This email is already taken"));
+        }
+        else
+        {
+            ToastService.Notify(new(ToastType.Danger, $"There was an error with registration, try again later"));
+        }
+    }
 }

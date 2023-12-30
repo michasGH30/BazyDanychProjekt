@@ -23,9 +23,9 @@ namespace bazyProjektBlazor.Services
             command.Parameters.AddWithValue("@ID", currentUser.ID);
 
             User response = new();
-            MySqlDataReader reader = command.ExecuteReader();
+            MySqlDataReader reader = await command.ExecuteReaderAsync();
 
-            while (reader.Read())
+            while (await reader.ReadAsync())
             {
                 response.ID = currentUser.ID;
                 response.FirstName = reader.GetString("firstName");
@@ -47,8 +47,7 @@ namespace bazyProjektBlazor.Services
             command.Parameters.AddWithValue("@email", request.Email);
             command.Parameters.AddWithValue("@ID", request.ID);
 
-            int rows = command.ExecuteNonQuery();
-            if (rows > 0)
+            if (await command.ExecuteNonQueryAsync() > 0)
             {
                 return await Task.FromResult(true);
             }

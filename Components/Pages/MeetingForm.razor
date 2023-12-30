@@ -8,356 +8,356 @@
 @inject NavigationManager navigationManager
 @attribute [StreamRendering(true)]
 
-@if(!isLogged)
+@if (!isLogged)
 {
-	<p>Loading ...</p>
+    <p>Loading ...</p>
 }
 else
 {
-	@if (meetingID.HasValue)
-	{
-		<PageTitle>Update Meeting</PageTitle>
-	}
-	else
-	{
-		<PageTitle>Create New Meeting</PageTitle>
+    @if (meetingID.HasValue)
+    {
+        <PageTitle>Update Meeting</PageTitle>
+    }
+    else
+    {
+        <PageTitle>Create New Meeting</PageTitle>
 
-	}
-	<div class="container-fluid">
-		<div class="row">
-			@if (meetingID.HasValue)
-			{
-				<h3>Update Meeting</h3>
-			}
-			else
-			{
-				<h3>Create New Meeting</h3>
+    }
+    <div class="container-fluid">
+        <div class="row">
+            @if (meetingID.HasValue)
+            {
+                <h3>Update Meeting</h3>
+            }
+            else
+            {
+                <h3>Create New Meeting</h3>
 
-			}
-		</div>
-		<div class="row">
-			@if((!meetingID.HasValue && repetitions != null && types != null) || (meetingID.HasValue && repetitions != null && types != null && statuses != null))
-			{
-				<EditForm Model="request" FormName="CreateMeeting" OnValidSubmit="OnValidSubmit">
-					<DataAnnotationsValidator />
-					<ValidationSummary />
-					<div class="row">
-						<div class="col-3">
-							<div class="form-group my-2">
-								<InputText id="name" @bind-Value="request.Title" placeholder="Title" type="text" class="form-control"></InputText>
+            }
+        </div>
+        <div class="row">
+            @if ((!meetingID.HasValue && repetitions != null && types != null) || (meetingID.HasValue && repetitions != null && types != null && statuses != null))
+            {
+                <EditForm Model="request" FormName="CreateMeeting" OnValidSubmit="OnValidSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <div class="row">
+                        <div class="col-3">
+                            <div class="form-group my-2">
+                                <InputText id="name" @bind-Value="request.Title" placeholder="Title" type="text" class="form-control"></InputText>
 
-							</div>
-							<div class="form-group my-2">
-								<DateInput TValue="DateOnly" @bind-Value="request.Date" Placeholder="Date" Min="@minDate" Max="@maxDate" EnableMinMax="true" />
-							</div>
-							<div class="form-group my-2">
-								<InputTextArea @bind-Value="request.Description" class="form-control"></InputTextArea>
-							</div>
-							<div class="form-group my-2">
-							<InputSelect @bind-Value="request.RepetitionOfMeeting" class="form-control">
-								@foreach (TypeStatusRepetitionOfMeetingResponse r in repetitions)
-								{
-									<option value="@r.ID">@r.Name</option>
-								}
-							</InputSelect>
-							</div>
-							<div class="form-group my-2">
-								<InputSelect @bind-Value="request.TypeOfMeeting" class="form-control">
-									@foreach (TypeStatusRepetitionOfMeetingResponse t in types)
-									{
-										<option value="@t.ID">@t.Name</option>
-									}
-								</InputSelect>
-							</div>
-							@if (meetingID.HasValue)
-							{
-								<div class="form-group my-2">
-									<InputSelect @bind-Value="request.StatusOfMeeting" class="form-control">
-										@foreach (TypeStatusRepetitionOfMeetingResponse s in statuses)
-										{
-											<option value="@s.ID">@s.Name</option>
-										}
-									</InputSelect>
-								</div>
-							}
-							<button class="btn btn-primary">SUBMIT</button>
-						</div>
-						<div class="form-group my-2 col-9">
-							<div class="row">
-								<Tabs>
-									@if(roles.Contains("director"))
-									{
-										<Tab Title="Users from my department" IsActive="true">
-											<Content>
-												@foreach (UserForm u in myDepartmentUserForms)
-												{
-													<Card>
-														<CardBody>
-															<label>
-																@u.Name <InputCheckbox @bind-Value="u.IsSelected" @onclick="((args)=>CheckBoxChanged(args,u.IsSelected,u.ID))" />
-															</label>
-														</CardBody>
-													</Card>
-												}
-											</Content>
-										</Tab>
-									}
-									@if(roles.Contains("leader") || (roles.Contains("user") && !roles.Contains("admin")) && !roles.Contains("director"))
-									{
-										<Tab Title="Users from my team" IsActive="true">
-											<Content>
-												@foreach (UserForm u in myTeamUserForms)
-												{
-													<Card>
-														<CardBody>
-															<label>
-																@u.Name <InputCheckbox @bind-Value="u.IsSelected" @onclick="((args)=>CheckBoxChanged(args,u.IsSelected,u.ID))" />
-															</label>
-														</CardBody>
-													</Card>
-												}
-											</Content>
-										</Tab>
-									}
-									<Tab Title="All users" IsActive="@allUsersIsActive">
-										<Content>
-											@foreach (UserForm u in allUserForms)
-											{
-												<Card>
-													<CardBody>
-														<label>
-															@u.Name <InputCheckbox @bind-Value="u.IsSelected" @onclick="((args)=>CheckBoxChanged(args,u.IsSelected,u.ID))" />
-														</label>
-													</CardBody>
-												</Card>
-											}
-										</Content>
-									</Tab>
-								</Tabs>
-							</div>
-						</div>
-					</div>
-				</EditForm>
-			}
-			else
-			{
-				<p>Loading form ...</p>
-			}
+                            </div>
+                            <div class="form-group my-2">
+                                <DateInput TValue="DateOnly" @bind-Value="request.Date" Placeholder="Date" Min="@minDate" Max="@maxDate" EnableMinMax="true" />
+                            </div>
+                            <div class="form-group my-2">
+                                <InputTextArea @bind-Value="request.Description" class="form-control"></InputTextArea>
+                            </div>
+                            <div class="form-group my-2">
+                                <InputSelect @bind-Value="request.RepetitionOfMeeting" class="form-control">
+                                    @foreach (TypeStatusRepetitionOfMeetingResponse r in repetitions)
+                                    {
+                                        <option value="@r.ID">@r.Name</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                            <div class="form-group my-2">
+                                <InputSelect @bind-Value="request.TypeOfMeeting" class="form-control">
+                                    @foreach (TypeStatusRepetitionOfMeetingResponse t in types)
+                                    {
+                                        <option value="@t.ID">@t.Name</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                            @if (meetingID.HasValue)
+                            {
+                                <div class="form-group my-2">
+                                    <InputSelect @bind-Value="request.StatusOfMeeting" class="form-control">
+                                        @foreach (TypeStatusRepetitionOfMeetingResponse s in statuses)
+                                        {
+                                            <option value="@s.ID">@s.Name</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                            }
+                            <button class="btn btn-primary">SUBMIT</button>
+                        </div>
+                        <div class="form-group my-2 col-9">
+                            <div class="row">
+                                <Tabs>
+                                    @if (roles.Contains("director"))
+                                    {
+                                        <Tab Title="Users from my department" IsActive="true">
+                                            <Content>
+                                                @foreach (UserForm u in myDepartmentUserForms)
+                                                {
+                                                    <Card>
+                                                        <CardBody>
+                                                            <label>
+                                                                @u.Name <InputCheckbox @bind-Value="u.IsSelected" @onclick="((args)=>CheckBoxChanged(args,u.IsSelected,u.ID))" />
+                                                            </label>
+                                                        </CardBody>
+                                                    </Card>
+                                                }
+                                            </Content>
+                                        </Tab>
+                                    }
+                                    @if (roles.Contains("leader") || (roles.Contains("user") && !roles.Contains("admin")) && !roles.Contains("director"))
+                                    {
+                                        <Tab Title="Users from my team" IsActive="true">
+                                            <Content>
+                                                @foreach (UserForm u in myTeamUserForms)
+                                                {
+                                                    <Card>
+                                                        <CardBody>
+                                                            <label>
+                                                                @u.Name <InputCheckbox @bind-Value="u.IsSelected" @onclick="((args)=>CheckBoxChanged(args,u.IsSelected,u.ID))" />
+                                                            </label>
+                                                        </CardBody>
+                                                    </Card>
+                                                }
+                                            </Content>
+                                        </Tab>
+                                    }
+                                    <Tab Title="All users" IsActive="@allUsersIsActive">
+                                        <Content>
+                                            @foreach (UserForm u in allUserForms)
+                                            {
+                                                <Card>
+                                                    <CardBody>
+                                                        <label>
+                                                            @u.Name <InputCheckbox @bind-Value="u.IsSelected" @onclick="((args)=>CheckBoxChanged(args,u.IsSelected,u.ID))" />
+                                                        </label>
+                                                    </CardBody>
+                                                </Card>
+                                            }
+                                        </Content>
+                                    </Tab>
+                                </Tabs>
+                            </div>
+                        </div>
+                    </div>
+                </EditForm>
+            }
+            else
+            {
+                <p>Loading form ...</p>
+            }
 
-		</div>
-	</div>
+        </div>
+    </div>
 }
 
 @code {
-	[Parameter]
-	public int? meetingID { get; set; }
-	CreateMeetingRequest request = new();
-	private DateOnly minDate;
-	private DateOnly maxDate;
-	private List<TypeStatusRepetitionOfMeetingResponse> types;
-	private List<TypeStatusRepetitionOfMeetingResponse> repetitions;
-	private List<TypeStatusRepetitionOfMeetingResponse> statuses;
-	private bool isLogged = false;
-	private List<User> users;
-	private List<UserForm> allUserForms = [];
-	private List<UserForm> myDepartmentUserForms = [];
-	private List<UserForm> myTeamUserForms = [];
-	[Inject]
-	public ToastService toastService { get; set; }
-	private Meeting meeting;
-	private List<UserFormChange> usersChangesList;
-	string[] roles;
-	bool allUsersIsActive;
+    [Parameter]
+    public int? meetingID { get; set; }
+    CreateMeetingRequest request = new();
+    private DateOnly minDate;
+    private DateOnly maxDate;
+    private List<TypeStatusRepetitionOfMeetingResponse> types;
+    private List<TypeStatusRepetitionOfMeetingResponse> repetitions;
+    private List<TypeStatusRepetitionOfMeetingResponse> statuses;
+    private bool isLogged = false;
+    private List<User> users;
+    private List<UserForm> allUserForms = [];
+    private List<UserForm> myDepartmentUserForms = [];
+    private List<UserForm> myTeamUserForms = [];
+    [Inject]
+    public ToastService toastService { get; set; }
+    private Meeting meeting;
+    private List<UserFormChange> usersChangesList;
+    string[] roles;
+    bool allUsersIsActive;
 
-	protected override async Task OnInitializedAsync()
-	{
-		isLogged = await loginService.IsLogged();
-		if(!isLogged)
-		{
-			navigationManager.NavigateTo("/login");
-		}
-		else
-		{
-			var rolesResponse = await loginService.GetRoles();
-			roles = rolesResponse.Split(",");
-			allUsersIsActive = roles.Contains("admin");
-			minDate = DateOnly.FromDateTime(DateTime.Now.AddYears(-1));
-			maxDate = DateOnly.FromDateTime(DateTime.Now.AddYears(1));
-			types = await meetingService.GetTypesOfMeeting();
-			repetitions = await meetingService.GetRepetitionOfMeeting();
-			users = await usersService.GetAllUsers();
-			usersChangesList = [];
-			allUserForms = users.Select(user => new UserForm(user)).ToList();
-			if(roles.Contains("director"))
-			{
-				var usersFromMyDepartment = await departmentService.GetUsersFromMyDepartment();
-				myDepartmentUserForms = usersFromMyDepartment.Select(user => new UserForm(user)).ToList();
-				foreach (var u in myDepartmentUserForms)
-				{
-					if(allUserForms.Contains(u))
-					{
-						allUserForms.Remove(u);
-					}
-				}
-			}
-			else if (roles.Contains("leader") || (roles.Contains("user") && !roles.Contains("admin")) && !roles.Contains("director"))
-			{
-				var usersFromMyTeam = roles.Contains("leader")? await teamsService.GetMembersLeader(): await teamsService.GetMembersMember();
-				myTeamUserForms = usersFromMyTeam.Select(user => new UserForm(user)).ToList();
-				foreach (var u in myTeamUserForms)
-				{
-					if (allUserForms.Contains(u))
-					{
-						allUserForms.Remove(u);
-					}
-				}
-			}
-			if(meetingID.HasValue)
-			{
-				statuses = await meetingService.GetStatusesOfMeeting();
-				meeting = await meetingService.GetMeetingByID(meetingID.Value);
-				request.ID = meetingID.Value;
-				request.Title = meeting.Title;
-				request.Date = meeting.Date;
+    protected override async Task OnInitializedAsync()
+    {
+        isLogged = await loginService.IsLogged();
+        if (!isLogged)
+        {
+            navigationManager.NavigateTo("/login");
+        }
+        else
+        {
+            var rolesResponse = await loginService.GetRoles();
+            roles = rolesResponse.Split(",");
+            allUsersIsActive = roles.Contains("admin");
+            minDate = DateOnly.FromDateTime(DateTime.Now.AddYears(-1));
+            maxDate = DateOnly.FromDateTime(DateTime.Now.AddYears(1));
+            types = await meetingService.GetTypesOfMeeting();
+            repetitions = await meetingService.GetRepetitionOfMeeting();
+            users = await usersService.GetAllUsers();
+            usersChangesList = [];
+            allUserForms = users.Select(user => new UserForm(user)).ToList();
+            if (roles.Contains("director"))
+            {
+                var usersFromMyDepartment = await departmentService.GetUsersFromMyDepartment();
+                myDepartmentUserForms = usersFromMyDepartment.Select(user => new UserForm(user)).ToList();
+                foreach (var u in myDepartmentUserForms)
+                {
+                    if (allUserForms.Contains(u))
+                    {
+                        allUserForms.Remove(u);
+                    }
+                }
+            }
+            else if (roles.Contains("leader") || (roles.Contains("user") && !roles.Contains("admin")) && !roles.Contains("director"))
+            {
+                var usersFromMyTeam = roles.Contains("leader") ? await teamsService.GetMembersLeader() : await teamsService.GetMembersMember();
+                myTeamUserForms = usersFromMyTeam.Select(user => new UserForm(user)).ToList();
+                foreach (var u in myTeamUserForms)
+                {
+                    if (allUserForms.Contains(u))
+                    {
+                        allUserForms.Remove(u);
+                    }
+                }
+            }
+            if (meetingID.HasValue)
+            {
+                statuses = await meetingService.GetStatusesOfMeeting();
+                meeting = await meetingService.GetMeetingByID(meetingID.Value);
+                request.ID = meetingID.Value;
+                request.Title = meeting.Title;
+                request.Date = meeting.Date;
 
-				request.Description = meeting.Description.Equals("Empty description") ? null : meeting.Description;
-				foreach (var rep in repetitions)
-				{
-					if(rep.Name.Equals(meeting.RepetitionOfMeeting))
-					{
-						request.RepetitionOfMeeting = rep.ID;
-					}
-				}
-				foreach(var type in types)
-				{
-					if(type.Name.Equals(meeting.TypeOfMeeting))
-					{
-						request.TypeOfMeeting = type.ID;
-					}
-				}
-				foreach(var status in statuses)
-				{
-					if(status.Name.Equals(meeting.StatusOfMeeting))
-					{
-						request.StatusOfMeeting = status.ID;
-					}
-				}
+                request.Description = meeting.Description.Equals("Empty description") ? null : meeting.Description;
+                foreach (var rep in repetitions)
+                {
+                    if (rep.Name.Equals(meeting.RepetitionOfMeeting))
+                    {
+                        request.RepetitionOfMeeting = rep.ID;
+                    }
+                }
+                foreach (var type in types)
+                {
+                    if (type.Name.Equals(meeting.TypeOfMeeting))
+                    {
+                        request.TypeOfMeeting = type.ID;
+                    }
+                }
+                foreach (var status in statuses)
+                {
+                    if (status.Name.Equals(meeting.StatusOfMeeting))
+                    {
+                        request.StatusOfMeeting = status.ID;
+                    }
+                }
 
-				foreach (UserForm allUserForm in allUserForms)
-				{
-					foreach (User user in meeting.Members)
-					{
-						if (allUserForm.ID == user.ID)
-						{
-							allUserForm.IsSelected = true;
-						}
-					}
-				}
-				if(roles.Contains("director"))
-				{
-					foreach(UserForm userForm in myDepartmentUserForms)
-					{
-						foreach(User user in meeting.Members)
-						{
-							if(userForm.ID == user.ID)
-							{
-								userForm.IsSelected = true;
-							}
-						}
-					}
-				}
-				else if (roles.Contains("leader") || (roles.Contains("user") && !roles.Contains("admin")) && !roles.Contains("director"))
-				{
-					foreach(UserForm userForm in myTeamUserForms)
-					{
-						foreach(User user in meeting.Members)
-						{
-							if(userForm.ID == user.ID)
-							{
-								userForm.IsSelected = true;
-							}
-						}
-					}
-				}
-			}
-		}
+                foreach (UserForm allUserForm in allUserForms)
+                {
+                    foreach (User user in meeting.Members)
+                    {
+                        if (allUserForm.ID == user.ID)
+                        {
+                            allUserForm.IsSelected = true;
+                        }
+                    }
+                }
+                if (roles.Contains("director"))
+                {
+                    foreach (UserForm userForm in myDepartmentUserForms)
+                    {
+                        foreach (User user in meeting.Members)
+                        {
+                            if (userForm.ID == user.ID)
+                            {
+                                userForm.IsSelected = true;
+                            }
+                        }
+                    }
+                }
+                else if (roles.Contains("leader") || (roles.Contains("user") && !roles.Contains("admin")) && !roles.Contains("director"))
+                {
+                    foreach (UserForm userForm in myTeamUserForms)
+                    {
+                        foreach (User user in meeting.Members)
+                        {
+                            if (userForm.ID == user.ID)
+                            {
+                                userForm.IsSelected = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
-	}
+    }
 
-	protected void CheckBoxChanged(MouseEventArgs args, bool IsSelected, int ID)
-	{
-		var user = usersChangesList.AsQueryable().FirstOrDefault(u => u.ID == ID);
-		if(user == null)
-		{
-			usersChangesList.Add(new()
-				{
-					ID = ID,
-					IsSelected = !IsSelected
-				});
-		}
-		else
-		{
-			user.IsSelected = !IsSelected;
-		}
-	}
+    protected void CheckBoxChanged(MouseEventArgs args, bool IsSelected, int ID)
+    {
+        var user = usersChangesList.AsQueryable().FirstOrDefault(u => u.ID == ID);
+        if (user == null)
+        {
+            usersChangesList.Add(new()
+                {
+                    ID = ID,
+                    IsSelected = !IsSelected
+                });
+        }
+        else
+        {
+            user.IsSelected = !IsSelected;
+        }
+    }
 
-	private async Task OnValidSubmit()
-	{
-		request.MembersID = [];
+    private async Task OnValidSubmit()
+    {
+        request.MembersID = [];
 
-		if(meetingID.HasValue)
-		{
-			foreach (var u in usersChangesList)
-			{
-				var mem = meeting.Members.AsQueryable().Where(m => m.ID == u.ID).ToList();
-				if (mem.Count > 0 && !u.IsSelected)
-				{
-					request.MembersID.Add(u);
-				}
-				else if (mem.Count == 0 && u.IsSelected)
-				{
-					request.MembersID.Add(u);
-				}
-			}
-			var response = await meetingService.UpdateMeeting(request);
+        if (meetingID.HasValue)
+        {
+            foreach (var u in usersChangesList)
+            {
+                var mem = meeting.Members.AsQueryable().Where(m => m.ID == u.ID).ToList();
+                if (mem.Count > 0 && !u.IsSelected)
+                {
+                    request.MembersID.Add(u);
+                }
+                else if (mem.Count == 0 && u.IsSelected)
+                {
+                    request.MembersID.Add(u);
+                }
+            }
+            var response = await meetingService.UpdateMeeting(request);
 
-			if(response)
-			{
-				toastService.Notify(new(ToastType.Success, "Successfully updated meeting"));
-				navigationManager.NavigateTo("/");
-			}
-			else
-			{
-				toastService.Notify(new(ToastType.Danger, "There was error with updating of meeting try again later"));
-			}
-		}
-		else
-		{
-			foreach (var u in usersChangesList)
-			{
-				if (u.IsSelected)
-					request.MembersID.Add(u);
-			}
+            if (response)
+            {
+                toastService.Notify(new(ToastType.Success, "Successfully updated meeting"));
+                navigationManager.NavigateTo("/");
+            }
+            else
+            {
+                toastService.Notify(new(ToastType.Danger, "There was error with updating of meeting try again later"));
+            }
+        }
+        else
+        {
+            foreach (var u in usersChangesList)
+            {
+                if (u.IsSelected)
+                    request.MembersID.Add(u);
+            }
 
-			var response = await meetingService.CreateMeeting(request);
+            var response = await meetingService.CreateMeeting(request);
 
-			if (response)
-			{
-				toastService.Notify(new(ToastType.Success, "Successfully added new meeting"));
-				navigationManager.NavigateTo("/");
-			}
-			else
-			{
-				toastService.Notify(new(ToastType.Danger, "There was error with creating of meeting try again later"));
-				request.Title = "";
-				request.Date = default;
-				request.RepetitionOfMeeting = 0;
-				request.TypeOfMeeting = 0;
-				request.MembersID = [];
-				allUserForms.ForEach(u => u.IsSelected = false);
-			}
-		}
+            if (response)
+            {
+                toastService.Notify(new(ToastType.Success, "Successfully added new meeting"));
+                navigationManager.NavigateTo("/");
+            }
+            else
+            {
+                toastService.Notify(new(ToastType.Danger, "There was error with creating of meeting try again later"));
+                request.Title = "";
+                request.Date = default;
+                request.RepetitionOfMeeting = 0;
+                request.TypeOfMeeting = 0;
+                request.MembersID = [];
+                allUserForms.ForEach(u => u.IsSelected = false);
+            }
+        }
 
-		
-	}
+
+    }
 }

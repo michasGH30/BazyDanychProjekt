@@ -4,7 +4,7 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
     <div class="form-group my-2">
-        <InputText id="firstName" type="text" @bind-Value="formModel.FirstName" class="form-control"/>
+        <InputText id="firstName" type="text" @bind-Value="formModel.FirstName" class="form-control" />
     </div>
     <div class="form-group my-2">
         <InputText id="lastName" type="text" @bind-Value="formModel.LastName" class="form-control" />
@@ -12,7 +12,7 @@
     <div class="form-group my-2">
         <InputText id="email" type="email" @bind-Value="formModel.Email" class="form-control" />
     </div>
-    <button class="btn btn-success"><Icon Name="IconName.Pencil"/> Modify</button>
+    <button class="btn btn-success"><Icon Name="IconName.Pencil" /> Modify</button>
 </EditForm>
 
 @code {
@@ -33,7 +33,7 @@
     private async Task OnValidSubmit()
     {
         var response = await profileService.UpdateProfile(formModel);
-        if(response)
+        if (response)
         {
             User = formModel;
             toastService.Notify(new(ToastType.Success, "Succesfully edited profile"));

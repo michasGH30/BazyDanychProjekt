@@ -11,6 +11,7 @@ namespace bazyProjektBlazor.Services
         public Task<List<TypesOfAttachmentsResponse>> GetAttachmentsTypes();
 
         public Task<AddAttachmentResponse> AddNewAttachment(AddNewAttachmentRequest request);
+        public Task<AddAttachmentResponse> UpdateAttachment(AddNewAttachmentRequest request);
 
         public Task<string> GetTypeByID(int ID);
 
@@ -132,6 +133,33 @@ namespace bazyProjektBlazor.Services
             }
             return await Task.FromResult(false);
 
+        }
+
+        public async Task<AddAttachmentResponse> UpdateAttachment(AddNewAttachmentRequest request)
+        {
+            AddAttachmentResponse response = new();
+
+            using var connetion = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+
+            connetion.Open();
+
+            using var command = new MySqlCommand("UPDATE meetingsattachments SET name = @NAME, typeID = @TID WHERE ID = @ID", connetion);
+            command.Parameters.AddWithValue("@NAME", request.Name);
+            command.Parameters.AddWithValue("@TID", request.TypeOfAttachment);
+            command.Parameters.AddWithValue("@ID", request.ID);
+
+            if (await command.ExecuteNonQueryAsync() > 0)
+            {
+                response.ID = request.ID;
+                response.SenderID = currentUser.ID;
+                response.IsSuccess = true;
+            }
+            else
+            {
+                response.IsSuccess = false;
+            }
+
+            return await Task.FromResult(response);
         }
     }
 }

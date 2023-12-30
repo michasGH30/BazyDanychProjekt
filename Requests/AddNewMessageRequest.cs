@@ -4,6 +4,7 @@ namespace bazyProjektBlazor.Requests
 {
     public class AddNewMessageRequest
     {
+        public int ID { get; set; }
         public int MeetingID { get; set; }
 
         [Required(ErrorMessage = "Message is required")]

@@ -14,7 +14,7 @@
             <h1>Manage</h1>
         </div>
     </div>
-    
+
     @if (!isLogged)
     {
         <div class="row">
@@ -22,7 +22,7 @@
                 <p>Loading...</p>
             </div>
         </div>
-       
+
     }
     else
     {
@@ -32,7 +32,7 @@
             {
                 <div class="col-12 d-flex justify-content-center my-1">
                     <p>Loading profile</p>
-                </div> 
+                </div>
             }
             else
             {
@@ -46,15 +46,15 @@
                     <div class="col-8 d-flex justify-content-start align-content-center flex-wrap">
                         <Button Color="ButtonColor.Warning" @onclick="OnClickChangeProfile"><Icon Name="IconName.Pencil" /> Modify profile</Button>
                     </div>
-                    
+
                 </div>
-            
+
             }
         </div>
         <!-- admin view -->
         if (roles.Contains("admin"))
         {
-            <hr class="hr"/>
+            <hr class="hr" />
             <div class="row">
                 <div class="col-3">
                     @if (allDepartments != null)
@@ -64,7 +64,7 @@
                         {
                             foreach (var department in allDepartments)
                             {
-                                <hr class="hr"/>
+                                <hr class="hr" />
                                 <DepartmentComponent department="department" />
                             }
                         }
@@ -113,7 +113,7 @@
                                     <UserComponent user="user" />
                                 }
                             </Collapse>
-                            
+
                         }
                         else
                         {
@@ -160,7 +160,7 @@
                     <DepartmentComponent department="directorMyDepartment" />
                 </div>
             </div>
-            
+
         }
         <!-- leader view -->
         if (leaderMyTeam != null && roles.Contains("leader"))
@@ -190,12 +190,12 @@
     IconName iconNameAllUsers;
     Collapse collapseFreeUsers = default!;
     IconName iconNameFreeUsers;
-    
+
     protected override async Task OnInitializedAsync()
     {
         isLogged = await loginService.IsLogged();
 
-        if(!isLogged)
+        if (!isLogged)
         {
             navigationManager.NavigateTo("/login");
         }

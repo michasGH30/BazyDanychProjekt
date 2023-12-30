@@ -33,7 +33,7 @@
                         <p><b>Title:</b> @meeting.Title</p>
                         <p><b>Date:</b> @meeting.Date</p>
                         <p><b>Type:</b> @Utility.Capitalise(meeting.TypeOfMeeting)</p>
-                        <p style="white-space: pre-line"><b>Description: </b><br/>@meeting.Description</p>
+                        <p style="white-space: pre-line"><b>Description: </b><br />@meeting.Description</p>
                         <p><b>Repetition:</b> @Utility.Capitalise(meeting.RepetitionOfMeeting)</p>
                         @switch (meeting.StatusOfMeeting)
                         {
@@ -49,14 +49,14 @@
                         }
                     </div>
                     <div class="@styleClass">
-                        <Button Color="ButtonColor.Primary" Class="my-1 mx-1" @onclick="OnClickAddMessage"><Icon Name="IconName.ChatRightText" /> Add new message</Button>
-                        <Button Color="ButtonColor.Secondary" Class="my-1 mx-1" @onclick="OnClickAddAttachment"><Icon Name="IconName.FileArrowUp" /> Add new attachment</Button>
+                        <Button Color="ButtonColor.Primary" Class="my-1 mx-1" @onclick="((args)=>OnClickAddUpdateMessage(args,null,null))"><Icon Name="IconName.ChatRightText" /> Add new message</Button>
+                        <Button Color="ButtonColor.Secondary" Class="my-1 mx-1" @onclick="((args)=>OnClickAddUpdateAttachment(args,null,null,null))"><Icon Name="IconName.FileArrowUp" /> Add new attachment</Button>
                     </div>
-                    @if(meeting.IsCreator)
+                    @if (meeting.IsCreator)
                     {
                         <div class="@styleClass">
-                            <Button Color="ButtonColor.Warning" @onclick="((args) => OnClickUpdate(args,meeting.ID))" Class="mx-1 my-1"><Icon Name="IconName.Pencil"/> Modify</Button>
-                            <Button Color="ButtonColor.Danger" @onclick="((args) => OnCLickDelete(args,meeting.ID))" Class="mx-1 my-1"><Icon Name="IconName.Trash"/> Delete</Button>
+                            <Button Color="ButtonColor.Warning" @onclick="((args) => OnClickUpdate(args,meeting.ID))" Class="mx-1 my-1"><Icon Name="IconName.Pencil" /> Modify</Button>
+                            <Button Color="ButtonColor.Danger" @onclick="((args) => OnCLickDelete(args,meeting.ID))" Class="mx-1 my-1"><Icon Name="IconName.Trash" /> Delete</Button>
                         </div>
                     }
                     <h3>Creator</h3>
@@ -76,6 +76,7 @@
                                         <p><b>Message:</b> @message.Message</p>
                                         @if (message.IsSender)
                                         {
+                                            <Button Color="ButtonColor.Warning" Class="mx-1 my-1" @onclick="((args) => OnClickAddUpdateMessage(args, message.ID, message.Message))"><Icon Name="IconName.Pencil" /> Update message</Button>
                                             <Button Color="ButtonColor.Danger" Class="mx-1 my-1" @onclick="((args) => OnClickDeleteMessage(args,message.ID))"><Icon Name="IconName.Trash" /> Delete message</Button>
                                         }
                                     </CardBody>
@@ -132,12 +133,13 @@
                                                     <Icon Name="IconName.FileEarmarkCode" Size="IconSize.x4" />
                                                     break;
                                                 case "Zip File":
-                                                    <Icon Name="IconName.FileEarmarkZip" Size="IconSize.x4"/>
+                                                    <Icon Name="IconName.FileEarmarkZip" Size="IconSize.x4" />
                                                     break;
                                             }
                                         </p>
-                                        @if(attachment.IsSender)
+                                        @if (attachment.IsSender)
                                         {
+                                            <Button Color="ButtonColor.Warning" Class="mx-1 my-1" @onclick="((args) => OnClickAddUpdateAttachment(args,attachment.ID, attachment.Name, attachment.Type))"><Icon Name="IconName.Pencil" /> Modify attachment</Button>
                                             <Button Color="ButtonColor.Danger" Class="mx-1 my-1" @onclick="((args) => OnClickDeleteAttachment(args,attachment.ID))"><Icon Name="IconName.Trash" /> Delete attachment</Button>
                                         }
                                     </CardBody>
@@ -210,13 +212,13 @@
             }
             var rolesResponse = await loginService.GetRoles();
             roles = rolesResponse.Split(",");
-            if(roles.Contains("admin"))
+            if (roles.Contains("admin"))
             {
                 meeting.IsCreator = true;
                 meeting.Attachments.ForEach(a => a.IsSender = true);
                 meeting.Messages.ForEach(m => m.IsSender = true);
             }
-            if(meeting.IsCreator)
+            if (meeting.IsCreator)
             {
                 styleClass = "col-4";
             }
@@ -227,26 +229,46 @@
         }
     }
 
-    protected async Task OnClickAddMessage(EventArgs args)
+    protected async Task OnClickAddUpdateMessage(EventArgs args, int? ID, string? message)
     {
         var parameters = new Dictionary<string, object>();
         parameters.Add("MeetingID", meeting.ID);
         parameters.Add("IsMessage", true);
         parameters.Add("MessagesList", meeting.Messages);
         parameters.Add("AttachmentsList", meeting.Attachments);
+        parameters.Add("MessageID", ID);
+        parameters.Add("Message", message);
+        parameters.Add("AttachmentID", null);
+        parameters.Add("AttachmentName", null);
+        parameters.Add("TypeOfAttachment", null);
         parameters.Add("CloseModalCallback", EventCallback.Factory.Create<MouseEventArgs>(this, CloseModalCallback));
-        await modal.ShowAsync<AddMessageAttachemntForm>(title: "New message", parameters: parameters);
+        await modal.ShowAsync<AddMessageAttachemntForm>(title: ID == null ? "New message" : "Modify message", parameters: parameters);
     }
 
-    protected async Task OnClickAddAttachment(EventArgs args)
+    protected async Task OnClickAddUpdateAttachment(EventArgs args, int? ID, string? name, string? type)
     {
         var parameters = new Dictionary<string, object>();
+        int typeOfAttachment = 0;
         parameters.Add("MeetingID", meeting.ID);
         parameters.Add("IsMessage", false);
         parameters.Add("MessagesList", meeting.Messages);
         parameters.Add("AttachmentsList", meeting.Attachments);
+        parameters.Add("MessageID", null);
+        parameters.Add("Message", null);
+        parameters.Add("AttachmentID", ID);
+        parameters.Add("AttachmentName", name);
+        if (type != null)
+        {
+            var response = await attachmentService.GetAttachmentsTypes();
+            typeOfAttachment = response.First(t => t.Type.Equals(type)).ID;
+            parameters.Add("TypeOfAttachment", typeOfAttachment);
+        }
+        else
+        {
+            parameters.Add("TypeOfAttachment", type);
+        }
         parameters.Add("CloseModalCallback", EventCallback.Factory.Create<MouseEventArgs>(this, CloseModalCallback));
-        await modal.ShowAsync<AddMessageAttachemntForm>(title: "New Attachment", parameters: parameters);
+        await modal.ShowAsync<AddMessageAttachemntForm>(title: ID == null ? "New Attachment" : "Modify attachment", parameters: parameters);
     }
 
     protected async Task OnClickDeleteMessage(EventArgs args, int ID)

@@ -13,6 +13,8 @@ namespace bazyProjektBlazor.Services
         public Task<MeetingMessage> GetMessageByID(int ID);
 
         public Task<bool> DeleteMessageByID(int ID);
+
+        public Task<AddMessageResponse> UpdateMessage(AddNewMessageRequest message);
     }
     public class MessagesService(IConfiguration configuration, IUsersService usersService, ICurrentUser currentUser) : IMessagesService
     {
@@ -69,11 +71,37 @@ namespace bazyProjektBlazor.Services
             command.Parameters.AddWithValue("@MEETINGID", message.MeetingID);
             command.Parameters.AddWithValue("@SID", currentUser.ID);
 
-            if (command.ExecuteNonQuery() > 0)
+            if (await command.ExecuteNonQueryAsync() > 0)
             {
                 response.SenderID = currentUser.ID;
                 response.IsSuccess = true;
                 response.ID = (int)command.LastInsertedId;
+            }
+            else
+            {
+                response.IsSuccess = false;
+            }
+
+            return await Task.FromResult(response);
+        }
+
+        public async Task<AddMessageResponse> UpdateMessage(AddNewMessageRequest message)
+        {
+            AddMessageResponse response = new();
+
+            using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+
+            connection.Open();
+
+            using var command = new MySqlCommand("UPDATE meetingschats SET message = @M WHERE ID = @ID", connection);
+            command.Parameters.AddWithValue("@M", message.Message);
+            command.Parameters.AddWithValue("@ID", message.ID);
+
+            if (await command.ExecuteNonQueryAsync() > 0)
+            {
+                response.SenderID = currentUser.ID;
+                response.IsSuccess = true;
+                response.ID = message.ID;
             }
             else
             {
