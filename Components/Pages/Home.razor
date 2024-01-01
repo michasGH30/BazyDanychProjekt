@@ -33,16 +33,24 @@
             </div>
         </div>
         <div class="row">
-            @if (myMeetingSummaries.Count > 0)
+            @if (myMeetingSummaries != null)
             {
-                foreach (MeetingSummaryResponse response in myMeetingSummaries)
+                if (myMeetingSummaries.Count > 0)
                 {
-                    <div class="col-4"><MeetingSummaryComponent meetingSummary="@response" OnMeetingDeleted="HandleMeetingDeleted" /></div>
+                    foreach (MeetingSummaryResponse response in myMeetingSummaries)
+                    {
+                        <div class="col-4"><MeetingSummaryComponent meetingSummary="@response" OnMeetingDeleted="HandleMeetingDeleted" /></div>
+                    }
                 }
+                else
+                {
+                    <div class="col-12 d-flex justify-content-center"><p>You don't have any meetings :(</p></div>
+                }
+               
             }
             else
             {
-                <div class="col-12 d-flex justify-content-center"><p>You don't have any meetings :(</p></div>
+                <div class="col-12 d-flex justify-content-center"><p>Loading my meetings ...</p></div>
             }
         </div>
 
@@ -57,18 +65,26 @@
                 </div>
             </div>
             <div class="row">
-                @if (allMeetingsSummaries.Count > 0)
+                @if (allMeetingsSummaries != null)
                 {
-                    @foreach (MeetingSummaryResponse response in allMeetingsSummaries)
+                    if (allMeetingsSummaries.Count > 0)
                     {
-                        <div class="col-2">
-                            <MeetingSummaryComponent meetingSummary="@response" />
-                        </div>
+                        @foreach (MeetingSummaryResponse response in allMeetingsSummaries)
+                        {
+                            <div class="col-2">
+                                <MeetingSummaryComponent meetingSummary="@response" />
+                            </div>
+                        }
+                        
+                    }
+                    else
+                    {
+                        <div class="col-12 d-flex justify-content-center"><p>There are no meetings in the database</p></div>
                     }
                 }
                 else
                 {
-                    <div class="col-12 d-flex justify-content-center"><p>There are no meetings in the database</p></div>
+                <div class="col-12 d-flex justify-content-center"><p>Loading all meetings ...</p></div>
                 }
             </div>
 
@@ -84,18 +100,26 @@
                 </div>
             </div>
             <div class="row">
-                @if (meetingsSummariesFromMyDepartment.Count > 0)
+                @if (meetingsSummariesFromMyDepartment != null)
                 {
-                    @foreach (MeetingSummaryResponse response in meetingsSummariesFromMyDepartment)
+                    @if (meetingsSummariesFromMyDepartment.Count > 0)
                     {
-                        <div class="col-4">
-                            <MeetingSummaryComponent meetingSummary="@response" />
-                        </div>
+                        @foreach (MeetingSummaryResponse response in meetingsSummariesFromMyDepartment)
+                        {
+                            <div class="col-4">
+                                <MeetingSummaryComponent meetingSummary="@response" />
+                            </div>
+                        }
                     }
+                    else
+                    {
+                        <div class="col-12 d-flex justify-content-center"><p>There are no meetings in your department</p></div>
+                    }
+                    
                 }
                 else
                 {
-                    <div class="col-12 d-flex justify-content-center"><p>There are no meetings in your department</p></div>
+                    <div class="col-12 d-flex justify-content-center"><p>Loading meetings from your department ...</p></div>
                 }
             </div>
 
@@ -111,18 +135,26 @@
                 </div>
             </div>
             <div class="row">
-                @if (meetingsSummariesFromMyTeam.Count > 0)
+                @if (meetingsSummariesFromMyTeam!= null)
                 {
-                    @foreach (MeetingSummaryResponse response in meetingsSummariesFromMyTeam)
+                    @if (meetingsSummariesFromMyTeam.Count > 0)
                     {
-                        <div class="col-4">
-                            <MeetingSummaryComponent meetingSummary="@response" />
-                        </div>
+                        @foreach (MeetingSummaryResponse response in meetingsSummariesFromMyTeam)
+                        {
+                            <div class="col-4">
+                                <MeetingSummaryComponent meetingSummary="@response" />
+                            </div>
+                        }
                     }
+                    else
+                    {
+                        <div class="col-12 d-flex justify-content-center"><p>There are no meetings in your team</p></div>
+                    }
+                    
                 }
                 else
                 {
-                    <div class="col-12 d-flex justify-content-center"><p>There are no meetings in your team</p></div>
+                    <div class="col-12 d-flex justify-content-center"><p>Loading meetings from your team ...</p></div>
                 }
             </div>
         }

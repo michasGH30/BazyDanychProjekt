@@ -13,11 +13,11 @@
                 <DataAnnotationsValidator />
                 <ValidationSummary />
                 <div class="form-group my-2">
-                    <InputText id="email" @bind-Value="loginModel.Email" placeholder="Enter Email" type="email" class="form-control"></InputText>
+                    <InputText id="email" @bind-Value="loginModel.Email" placeholder="Enter Email" type="email" class="form-control" autocomplete="off"></InputText>
 
                 </div>
                 <div class="form-group my-2">
-                    <InputText id="password" @bind-Value="loginModel.Password" placeholder="Enter Password" type="password" class="form-control"></InputText>
+                    <InputText id="password" @bind-Value="loginModel.Password" placeholder="Enter Password" type="password" class="form-control" autocomplete="off"></InputText>
 
                 </div>
                 <button class="btn btn-primary">SUBMIT</button>

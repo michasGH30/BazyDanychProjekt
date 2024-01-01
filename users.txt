@@ -1,0 +1,7 @@
+﻿password = 123
+
+michael.beetle@example.com - > admin
+aran.horne@example.com - > director
+halima.spence@example.com -> leader
+megan.petty@example.com -> member of team
+kaitlin.ruiz@example.com -> free user
