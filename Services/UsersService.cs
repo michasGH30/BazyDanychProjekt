@@ -45,7 +45,7 @@ namespace bazyProjektBlazor.Services
 
             connection.Open();
 
-            using var command = new MySqlCommand("SELECT ID FROM users WHERE ID NOT IN (SELECT memberID FROM teamsmembers) AND ID NOT IN (SELECT leaderID FROM teams) and ID NOT IN (SELECT directorID FROM departments) AND isAdmin = false", connection);
+            using var command = new MySqlCommand("SELECT users.ID FROM users LEFT JOIN teamsmembers ON users.ID = teamsmembers.memberID LEFT JOIN teams ON teamsmembers.teamID = teams.ID LEFT JOIN departments ON teams.departmentID = departments.ID WHERE teamsmembers.memberID IS NULL AND teams.leaderID IS NULL AND departments.directorID IS NULL AND users.isAdmin = false;", connection);
 
             MySqlDataReader reader = await command.ExecuteReaderAsync();
 

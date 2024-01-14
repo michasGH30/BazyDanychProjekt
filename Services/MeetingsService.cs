@@ -234,12 +234,23 @@ namespace bazyProjektBlazor.Services
         {
             List<MeetingSummaryResponse> response = [];
 
+            using var myDepartment = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            myDepartment.Open();
+
+            using var myDepartmentCommand = new MySqlCommand("SELECT ID FROM departments WHERE directorID = @ID", myDepartment);
+            myDepartmentCommand.Parameters.AddWithValue("@ID", currentUser.ID);
+
+            MySqlDataReader readerD = await myDepartmentCommand.ExecuteReaderAsync();
+
+            await readerD.ReadAsync();
+            int ID = readerD.GetInt32(0);
+
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
             connection.Open();
 
             using var command = new MySqlCommand("SELECT meetings.ID FROM meetings INNER JOIN meetingsmembers ON meetings.ID = meetingsmembers.meetingID WHERE meetings.creatorID IN (SELECT teams.leaderID FROM teams WHERE teams.departmentID = @ID) OR meetingsmembers.memberID IN (SELECT teamsmembers.memberID FROM teamsmembers INNER JOIN teams ON teamsmembers.teamID = teams.ID WHERE teams.departmentID = @ID)", connection);
-            command.Parameters.AddWithValue("@ID", currentUser.ID);
+            command.Parameters.AddWithValue("@ID", ID);
 
             MySqlDataReader reader = await command.ExecuteReaderAsync();
 
@@ -310,7 +321,7 @@ namespace bazyProjektBlazor.Services
 
             connection.Open();
 
-            using var command = new MySqlCommand("SELECT meetings.ID FROM meetings INNER JOIN statusofmeeting ON meetings.statusID = statusofmeeting.ID WHERE meetings.creatorID = @ID OR meetings.ID IN (SELECT meetingsmembers.meetingID FROM meetingsmembers WHERE meetingsmembers.memberID = @ID)", connection);
+            using var command = new MySqlCommand("SELECT meetings.ID FROM meetings WHERE meetings.creatorID = @ID", connection);
             command.Parameters.AddWithValue("@ID", currentUser.ID);
 
             MySqlDataReader reader = await command.ExecuteReaderAsync();
@@ -318,6 +329,22 @@ namespace bazyProjektBlazor.Services
             while (await reader.ReadAsync())
             {
                 MeetingSummaryResponse r = await GetMeetingSummaryByID(reader.GetInt32(0));
+                response.Add(r);
+            }
+
+            using var connectionMember = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+
+            connectionMember.Open();
+
+            using var commandMember = new MySqlCommand("SELECT meetingsmembers.meetingID FROM meetingsmembers WHERE meetingsmembers.memberID = @ID", connectionMember);
+
+            commandMember.Parameters.AddWithValue("@ID", currentUser.ID);
+
+            MySqlDataReader readerMember = await commandMember.ExecuteReaderAsync();
+
+            while (await readerMember.ReadAsync())
+            {
+                MeetingSummaryResponse r = await GetMeetingSummaryByID(readerMember.GetInt32(0));
                 response.Add(r);
             }
 

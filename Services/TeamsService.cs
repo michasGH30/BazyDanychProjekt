@@ -70,7 +70,7 @@ namespace bazyProjektBlazor.Services
 
             membersConnection.Open();
 
-            using var membersCommand = new MySqlCommand("SELECT teamsmembers.memberID FROM teamsmembers WHERE teamsmembers.teamID = (SELECT teamsmembers.teamID FROM teamsmembers WHERE teamsmembers.memberID = @ID) AND teamsmembers.memberID != @ID", membersConnection);
+            using var membersCommand = new MySqlCommand("SELECT tm1.memberID FROM teamsmembers tm1 INNER JOIN teamsmembers tm2 ON tm1.teamID = tm2.teamID WHERE tm1.memberID != tm2.memberID AND tm2.memberID = @ID", membersConnection);
             membersCommand.Parameters.AddWithValue("@ID", currentUser.ID);
 
             MySqlDataReader reader = await membersCommand.ExecuteReaderAsync();
@@ -85,9 +85,9 @@ namespace bazyProjektBlazor.Services
             leaderConnection.Open();
 
             using var leaderCommand = new MySqlCommand("SELECT teams.leaderID FROM teams INNER JOIN teamsmembers ON teams.ID = teamsmembers.teamID AND teamsmembers.memberID = @ID", leaderConnection);
-            membersCommand.Parameters.AddWithValue("@ID", currentUser.ID);
+            leaderCommand.Parameters.AddWithValue("@ID", currentUser.ID);
 
-            reader = await membersCommand.ExecuteReaderAsync();
+            reader = await leaderCommand.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
             {
