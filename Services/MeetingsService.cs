@@ -234,22 +234,22 @@ namespace bazyProjektBlazor.Services
         {
             List<MeetingSummaryResponse> response = [];
 
-            using var myDepartment = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            myDepartment.Open();
+            using var departmentIDConnection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            departmentIDConnection.Open();
 
-            using var myDepartmentCommand = new MySqlCommand("SELECT ID FROM departments WHERE directorID = @ID", myDepartment);
-            myDepartmentCommand.Parameters.AddWithValue("@ID", currentUser.ID);
+            using var departmentIDCommand = new MySqlCommand("SELECT ID FROM departments WHERE directorID = @ID", departmentIDConnection);
+            departmentIDCommand.Parameters.AddWithValue("@ID", currentUser.ID);
 
-            MySqlDataReader readerD = await myDepartmentCommand.ExecuteReaderAsync();
+            MySqlDataReader departmentIDReader = await departmentIDCommand.ExecuteReaderAsync();
 
-            await readerD.ReadAsync();
-            int ID = readerD.GetInt32(0);
+            await departmentIDReader.ReadAsync();
+            int ID = departmentIDReader.GetInt32(0);
 
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
             connection.Open();
 
-            using var command = new MySqlCommand("SELECT meetings.ID FROM meetings INNER JOIN meetingsmembers ON meetings.ID = meetingsmembers.meetingID WHERE meetings.creatorID IN (SELECT teams.leaderID FROM teams WHERE teams.departmentID = @ID) OR meetingsmembers.memberID IN (SELECT teamsmembers.memberID FROM teamsmembers INNER JOIN teams ON teamsmembers.teamID = teams.ID WHERE teams.departmentID = @ID)", connection);
+            using var command = new MySqlCommand("SELECT DISTINCT meetings.ID FROM meetings INNER JOIN meetingsmembers ON meetings.ID = meetingsmembers.meetingID WHERE meetings.creatorID IN (SELECT teamsmembers.memberID FROM teamsmembers INNER JOIN teams ON teamsmembers.teamID = teams.ID WHERE teams.departmentID = @ID) OR meetings.creatorID IN (SELECT teams.leaderID FROM teams WHERE teams.departmentID = @ID) OR meetingsmembers.memberID IN (SELECT teamsmembers.memberID FROM teamsmembers INNER JOIN teams ON teamsmembers.teamID = teams.ID WHERE teams.departmentID = @ID) OR meetingsmembers.memberID IN (SELECT teams.leaderID FROM teams WHERE teams.departmentID = @ID)", connection);
             command.Parameters.AddWithValue("@ID", ID);
 
             MySqlDataReader reader = await command.ExecuteReaderAsync();

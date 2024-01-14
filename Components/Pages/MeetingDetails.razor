@@ -15,179 +15,181 @@
         </div>
     </div>
 
-<div class="row">
-    @if (!isLogged)
-    {
-        <div class="col-12 d-flex justify-content-center my-1">
-            <p>Loading ...</p>
-        </div>
-    }
-    else
-    {
-        if (meeting != null)
+    <div class="row">
+        @if (!isLogged)
         {
-            <div class="col-8">
-                <div class="row">
-
-                    <div class="@styleClass">
-                        <p><b>Title:</b> @meeting.Title</p>
-                        <p><b>Date:</b> @meeting.Date</p>
-                        <p><b>Type:</b> @Utility.Capitalise(meeting.TypeOfMeeting)</p>
-                        <p style="white-space: pre-line"><b>Description: </b><br />@meeting.Description</p>
-                        <p><b>Repetition:</b> @Utility.Capitalise(meeting.RepetitionOfMeeting)</p>
-                        @switch (meeting.StatusOfMeeting)
-                        {
-                            case "scheduled":
-                                <Alert Color="AlertColor.Success">@Utility.Capitalise(meeting.StatusOfMeeting)</Alert>
-                                break;
-                            case "rescheduled":
-                                <Alert Color="AlertColor.Warning">@Utility.Capitalise(meeting.StatusOfMeeting)</Alert>
-                                break;
-                            case "cancelled":
-                                <Alert Color="AlertColor.Danger">@Utility.Capitalise(meeting.StatusOfMeeting)</Alert>
-                                break;
-                        }
-                    </div>
-                    <div class="@styleClass">
-                        <Button Color="ButtonColor.Primary" Class="my-1 mx-1" @onclick="((args)=>OnClickAddUpdateMessage(args,null,null))"><Icon Name="IconName.ChatRightText" /> Add new message</Button>
-                        <Button Color="ButtonColor.Secondary" Class="my-1 mx-1" @onclick="((args)=>OnClickAddUpdateAttachment(args,null,null,null))"><Icon Name="IconName.FileArrowUp" /> Add new attachment</Button>
-                    </div>
-                    @if (meeting.IsCreator)
-                    {
-                        <div class="@styleClass">
-                            <Button Color="ButtonColor.Warning" @onclick="((args) => OnClickUpdate(args,meeting.ID))" Class="mx-1 my-1"><Icon Name="IconName.Pencil" /> Modify</Button>
-                            <Button Color="ButtonColor.Danger" @onclick="((args) => OnCLickDelete(args,meeting.ID))" Class="mx-1 my-1"><Icon Name="IconName.Trash" /> Delete</Button>
-                        </div>
-                    }
-                    <h3>Creator</h3>
-                    <UserComponent user="@meeting.Creator" />
-                </div>
-                <div class="row">
-                    <div class="col-6">
-                        <h3>Messages</h3>
-                        @if (meeting.Messages.Count > 0)
-                        {
-                            foreach (MeetingMessage message in meeting.Messages)
-                            {
-                                <Card Class="my-2">
-                                    <CardBody>
-                                        <h4>Message send by:</h4>
-                                        <UserComponent user="message.Sender" />
-                                        <p><b>Message:</b> @message.Message</p>
-                                        @if (message.IsSender)
-                                        {
-                                            <Button Color="ButtonColor.Warning" Class="mx-1 my-1" @onclick="((args) => OnClickAddUpdateMessage(args, message.ID, message.Message))"><Icon Name="IconName.Pencil" /> Update message</Button>
-                                            <Button Color="ButtonColor.Danger" Class="mx-1 my-1" @onclick="((args) => OnClickDeleteMessage(args,message.ID))"><Icon Name="IconName.Trash" /> Delete message</Button>
-                                        }
-                                    </CardBody>
-                                </Card>
-
-                            }
-                        }
-                        else
-                        {
-                            <Card>
-                                <CardBody>
-                                    <p>This meeting has no messages</p>
-                                </CardBody>
-                            </Card>
-                        }
-                    </div>
-                    <div class="col-6">
-                        <h3>Attachments</h3>
-                        @if (meeting.Attachments.Count > 0)
-                        {
-                            foreach (MeetingAttachment attachment in meeting.Attachments)
-                            {
-                                <Card Class="my-2">
-                                    <CardBody>
-                                        <h4>Attachment send by:</h4>
-                                        <UserComponent user="attachment.Sender" />
-                                        <p><b>File name:</b> @attachment.Name</p>
-                                        <p>
-                                            <b>File type: </b>
-                                            @switch (attachment.Type)
-                                            {
-                                                case "Word Document":
-                                                    <Icon Name="IconName.FileEarmarkWord" Size="IconSize.x4" />
-                                                    break;
-                                                case "PDF Document":
-                                                    <Icon Name="IconName.FileEarmarkPdf" Size="IconSize.x4" />
-                                                    break;
-                                                case "Image":
-                                                    <Icon Name="IconName.FileEarmarkImage" Size="IconSize.x4" />
-                                                    break;
-                                                case "Audio":
-                                                    <Icon Name="IconName.FileEarmarkMusic" Size="IconSize.x4" />
-                                                    break;
-                                                case "Video":
-                                                    <Icon Name="IconName.FileEarmarkPlay" Size="IconSize.x4" />
-                                                    break;
-                                                case "Spreadsheet":
-                                                    <Icon Name="IconName.FileEarmarkExcel" Size="IconSize.x4" />
-                                                    break;
-                                                case "Presentation":
-                                                    <Icon Name="IconName.FileEarmarkPpt" Size="IconSize.x4" />
-                                                    break;
-                                                case "Code":
-                                                    <Icon Name="IconName.FileEarmarkCode" Size="IconSize.x4" />
-                                                    break;
-                                                case "Zip File":
-                                                    <Icon Name="IconName.FileEarmarkZip" Size="IconSize.x4" />
-                                                    break;
-                                            }
-                                        </p>
-                                        @if (attachment.IsSender)
-                                        {
-                                            <Button Color="ButtonColor.Warning" Class="mx-1 my-1" @onclick="((args) => OnClickAddUpdateAttachment(args,attachment.ID, attachment.Name, attachment.Type))"><Icon Name="IconName.Pencil" /> Modify attachment</Button>
-                                            <Button Color="ButtonColor.Danger" Class="mx-1 my-1" @onclick="((args) => OnClickDeleteAttachment(args,attachment.ID))"><Icon Name="IconName.Trash" /> Delete attachment</Button>
-                                        }
-                                    </CardBody>
-                                </Card>
-
-                            }
-                        }
-                        else
-                        {
-                            <Card>
-                                <CardBody>
-                                    <p>This meeting has no attachments</p>
-                                </CardBody>
-                            </Card>
-                        }
-                    </div>
-                </div>
-            </div>
-            <div class="col-4">
-                <h3>Members</h3>
-                @if (meeting.Members.Count > 0)
-                {
-                    foreach (User user in meeting.Members)
-                    {
-                        <UserComponent user="user" />
-                    }
-                }
-                else
-                {
-                    <Card>
-                        <CardBody>
-                            <p>This meeting has no members</p>
-                        </CardBody>
-                    </Card>
-                }
+            <div class="col-12 d-flex justify-content-center my-1">
+                <p>Loading ...</p>
             </div>
         }
         else
         {
-            <p>Some issue with meeting details</p>
+            if (meeting != null)
+            {
+                <div class="col-8">
+                    <div class="row">
+
+                        <div class="@styleClass">
+                            <p><b>Title:</b> @meeting.Title</p>
+                            <p><b>Date:</b> @meeting.Date</p>
+                            <p><b>Type:</b> @Utility.Capitalise(meeting.TypeOfMeeting)</p>
+                            <p style="white-space: pre-line"><b>Description: </b><br />@meeting.Description</p>
+                            <p><b>Repetition:</b> @Utility.Capitalise(meeting.RepetitionOfMeeting)</p>
+                            @switch (meeting.StatusOfMeeting)
+                            {
+                                case "scheduled":
+                                    <Alert Color="AlertColor.Success">@Utility.Capitalise(meeting.StatusOfMeeting)</Alert>
+                                    break;
+                                case "rescheduled":
+                                    <Alert Color="AlertColor.Warning">@Utility.Capitalise(meeting.StatusOfMeeting)</Alert>
+                                    break;
+                                case "cancelled":
+                                    <Alert Color="AlertColor.Danger">@Utility.Capitalise(meeting.StatusOfMeeting)</Alert>
+                                    break;
+                            }
+                        </div>
+                        <div class="@styleClass">
+                            <Button Color="ButtonColor.Primary" Class="my-1 mx-1" @onclick="((args)=>OnClickAddUpdateMessage(args,null,null))"><Icon Name="IconName.ChatRightText" /> Add new message</Button>
+                            <Button Color="ButtonColor.Secondary" Class="my-1 mx-1" @onclick="((args)=>OnClickAddUpdateAttachment(args,null,null,null))"><Icon Name="IconName.FileArrowUp" /> Add new attachment</Button>
+                        </div>
+                        @if (meeting.IsCreator)
+                        {
+                            <div class="@styleClass">
+                                <Button Color="ButtonColor.Warning" @onclick="((args) => OnClickUpdate(args,meeting.ID))" Class="mx-1 my-1"><Icon Name="IconName.Pencil" /> Modify</Button>
+                                <Button Color="ButtonColor.Danger" @onclick="((args) => OnCLickDelete(args,meeting.ID))" Class="mx-1 my-1"><Icon Name="IconName.Trash" /> Delete</Button>
+                            </div>
+                        }
+                        <h3>Creator</h3>
+                        <UserComponent user="@meeting.Creator" />
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <h3>Messages</h3>
+                            @if (meeting.Messages.Count > 0)
+                            {
+                                <Button Type="ButtonType.Button" Color="ButtonColor.Primary" @onclick="ToggleContentMessagesAsync"><Icon Name="@iconNameMessages" /> Toggle messages</Button>
+                                <Collapse @ref="collapseMessages">
+                                    @foreach (MeetingMessage message in meeting.Messages)
+                                    {
+                                        <Card Class="my-2">
+                                            <CardBody>
+                                                <h4>Message send by:</h4>
+                                                <UserComponent user="message.Sender" />
+                                                <p><b>Message:</b> @message.Message</p>
+                                                @if (message.IsSender)
+                                                {
+                                                    <Button Color="ButtonColor.Warning" Class="mx-1 my-1" @onclick="((args) => OnClickAddUpdateMessage(args, message.ID, message.Message))"><Icon Name="IconName.Pencil" /> Update message</Button>
+                                                    <Button Color="ButtonColor.Danger" Class="mx-1 my-1" @onclick="((args) => OnClickDeleteMessage(args,message.ID))"><Icon Name="IconName.Trash" /> Delete message</Button>
+                                                }
+                                            </CardBody>
+                                        </Card>
+
+                                    }
+                                </Collapse>
+                            }
+                            else
+                            {
+                                <Card>
+                                    <CardBody>
+                                        <p>This meeting has no messages</p>
+                                    </CardBody>
+                                </Card>
+                            }
+                        </div>
+                        <div class="col-6">
+                            <h3>Attachments</h3>
+                            @if (meeting.Attachments.Count > 0)
+                            {
+                                <Button Type="ButtonType.Button" Color="ButtonColor.Primary" @onclick="ToggleContentAttachmentsAsync"><Icon Name="@iconNameAttachments" /> Toggle attachments</Button>
+                                <Collapse @ref="collapseAttachments">
+                                    @foreach (MeetingAttachment attachment in meeting.Attachments)
+                                    {
+                                        <Card Class="my-2">
+                                            <CardBody>
+                                                <h4>Attachment send by:</h4>
+                                                <UserComponent user="attachment.Sender" />
+                                                <p><b>File name:</b> @attachment.Name</p>
+                                                <p>
+                                                    <b>File type: </b>
+                                                    @switch (attachment.Type)
+                                                    {
+                                                        case "Word Document":
+                                                            <Icon Name="IconName.FileEarmarkWord" Size="IconSize.x4" />
+                                                            break;
+                                                        case "PDF Document":
+                                                            <Icon Name="IconName.FileEarmarkPdf" Size="IconSize.x4" />
+                                                            break;
+                                                        case "Image":
+                                                            <Icon Name="IconName.FileEarmarkImage" Size="IconSize.x4" />
+                                                            break;
+                                                        case "Audio":
+                                                            <Icon Name="IconName.FileEarmarkMusic" Size="IconSize.x4" />
+                                                            break;
+                                                        case "Video":
+                                                            <Icon Name="IconName.FileEarmarkPlay" Size="IconSize.x4" />
+                                                            break;
+                                                        case "Spreadsheet":
+                                                            <Icon Name="IconName.FileEarmarkExcel" Size="IconSize.x4" />
+                                                            break;
+                                                        case "Presentation":
+                                                            <Icon Name="IconName.FileEarmarkPpt" Size="IconSize.x4" />
+                                                            break;
+                                                        case "Code":
+                                                            <Icon Name="IconName.FileEarmarkCode" Size="IconSize.x4" />
+                                                            break;
+                                                        case "Zip File":
+                                                            <Icon Name="IconName.FileEarmarkZip" Size="IconSize.x4" />
+                                                            break;
+                                                    }
+                                                </p>
+                                                @if (attachment.IsSender)
+                                                {
+                                                    <Button Color="ButtonColor.Warning" Class="mx-1 my-1" @onclick="((args) => OnClickAddUpdateAttachment(args,attachment.ID, attachment.Name, attachment.Type))"><Icon Name="IconName.Pencil" /> Modify attachment</Button>
+                                                    <Button Color="ButtonColor.Danger" Class="mx-1 my-1" @onclick="((args) => OnClickDeleteAttachment(args,attachment.ID))"><Icon Name="IconName.Trash" /> Delete attachment</Button>
+                                                }
+                                            </CardBody>
+                                        </Card>
+
+                                    }
+                                </Collapse>
+                            }
+                            else
+                            {
+                                <Card>
+                                    <CardBody>
+                                        <p>This meeting has no attachments</p>
+                                    </CardBody>
+                                </Card>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <h3>Members</h3>
+                    @if (meeting.Members.Count > 0)
+                    {
+                        foreach (User user in meeting.Members)
+                        {
+                            <UserComponent user="user" />
+                        }
+                    }
+                    else
+                    {
+                        <Card>
+                            <CardBody>
+                                <p>This meeting has no members</p>
+                            </CardBody>
+                        </Card>
+                    }
+                </div>
+            }
+            else
+            {
+                <p>Some issue with meeting details</p>
+            }
         }
-    }
-</div>
-    <div class="row">
-        <div class="col-12 d-flex justify-content-center my-1">
-            <p class="lead"><b>&copy; Michał Żuk 2024</b></p>
-        </div>
     </div>
+    <Footer />
 </div>
 
 @code {
@@ -201,6 +203,10 @@
     Meeting meeting;
     string styleClass = "";
     string[] roles;
+    Collapse collapseMessages = default!;
+    IconName iconNameMessages;
+    Collapse collapseAttachments = default!;
+    IconName iconNameAttachments;
     protected override async Task OnInitializedAsync()
     {
         isLogged = await loginService.IsLogged();
@@ -210,6 +216,8 @@
         }
         else
         {
+            iconNameMessages = IconName.ArrowsExpand;
+            iconNameAttachments = IconName.ArrowsExpand;
             meeting = await meetingService.GetMeetingByID(meetingID);
             if (meeting.Description.Equals("Empty description"))
             {
@@ -232,6 +240,19 @@
                 styleClass = "col-6";
             }
         }
+    }
+
+    private async Task ToggleContentMessagesAsync()
+    {
+        iconNameMessages = iconNameMessages == IconName.ArrowsExpand ? IconName.ArrowsCollapse : IconName.ArrowsExpand;
+        await collapseMessages.ToggleAsync();
+
+    }
+
+    private async Task ToggleContentAttachmentsAsync()
+    {
+        iconNameAttachments = iconNameAttachments == IconName.ArrowsExpand ? IconName.ArrowsCollapse : IconName.ArrowsExpand;
+        await collapseAttachments.ToggleAsync();
     }
 
     protected async Task OnClickAddUpdateMessage(EventArgs args, int? ID, string? message)

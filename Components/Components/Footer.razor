@@ -1,0 +1,15 @@
+﻿<div class="row">
+    <div class="col-12 d-flex justify-content-center my-1">
+        <p class="lead"><b>&copy; Michał Żuk @dateYear</b></p>
+    </div>
+</div>
+
+@code {
+    string dateYear = string.Empty;
+
+    protected override Task OnInitializedAsync()
+    {
+        dateYear = DateTime.Now.Year.ToString();
+        return base.OnInitializedAsync();
+    }
+}

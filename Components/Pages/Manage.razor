@@ -84,11 +84,13 @@
                         <h2>All Teams</h2>
                         @if (allTeams.Count > 0)
                         {
-                            foreach (Team team in allTeams)
-                            {
-                                <TeamComponent team="team" />
-                            }
-
+                            <Button Type="ButtonType.Button" Color="ButtonColor.Primary" @onclick="ToggleContentAllTeamsAsync"><Icon Name="@iconNameTeams" /> Toggle all teams</Button>
+                            <Collapse @ref="collapseAllTeams">
+                                @foreach (Team team in allTeams)
+                                {
+                                    <TeamComponent team="team" />
+                                }
+                            </Collapse>
                         }
                         else
                         {
@@ -174,11 +176,7 @@
         }
 
     }
-    <div class="row">
-        <div class="col-12 d-flex justify-content-center my-1">
-            <p class="lead"><b>&copy; Michał Żuk 2024</b></p>
-        </div>
-    </div>
+    <Footer />
 </div>
 @code {
     private Modal modal = default!;
@@ -191,6 +189,8 @@
     List<User> freeUsers;
     DepartmentByIDResponse directorMyDepartment;
     Team leaderMyTeam;
+    Collapse collapseAllTeams = default!;
+    IconName iconNameTeams;
     Collapse collapseAllUsers = default!;
     IconName iconNameAllUsers;
     Collapse collapseFreeUsers = default!;
@@ -206,9 +206,9 @@
         }
         else
         {
-
             iconNameAllUsers = IconName.ArrowsExpand;
             iconNameFreeUsers = IconName.ArrowsExpand;
+            iconNameTeams = IconName.ArrowsExpand;
             var response = await loginService.GetRoles();
             roles = response.Split(",");
 
@@ -234,6 +234,13 @@
                 leaderMyTeam = await teamsService.GetMyTeam();
             }
         }
+    }
+
+    private async Task ToggleContentAllTeamsAsync()
+    {
+        iconNameTeams = iconNameTeams == IconName.ArrowsExpand ? IconName.ArrowsCollapse : IconName.ArrowsExpand;
+        await collapseAllTeams.ToggleAsync();
+
     }
 
     private async Task ToggleContentAllUsersAsync()
