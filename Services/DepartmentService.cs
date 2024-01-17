@@ -106,20 +106,6 @@ namespace bazyProjektBlazor.Services
                 response.Add(await usersService.GetUserById(reader.GetInt32("memberID")));
             }
 
-            using var leaderConnection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
-
-            leaderConnection.Open();
-
-            using var leaderCommand = new MySqlCommand("SELECT teams.leaderID FROM teams INNER JOIN departments ON teams.departmentID = departments.ID WHERE departments.directorID = @ID", leaderConnection);
-            leaderCommand.Parameters.AddWithValue("@ID", currentUser.ID);
-
-            reader = await leaderCommand.ExecuteReaderAsync();
-
-            while (await reader.ReadAsync())
-            {
-                response.Add(await usersService.GetUserById(reader.GetInt32("leaderID")));
-            }
-
             return await Task.FromResult(response);
         }
     }

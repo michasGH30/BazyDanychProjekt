@@ -49,7 +49,7 @@ namespace bazyProjektBlazor.Services
 
             connection.Open();
 
-            using var command = new MySqlCommand("SELECT teamsmembers.memberID FROM teamsmembers INNER JOIN teams ON teamsmembers.teamID = teams.ID WHERE teams.leaderID = @ID", connection);
+            using var command = new MySqlCommand("SELECT t1.memberID FROM teamsmembers t1 INNER JOIN teamsmembers t2 ON t1.teamID = t2.teamID WHERE t2.memberID = @ID AND t2.isLeader = 1 AND t1.memberID != @ID", connection);
             command.Parameters.AddWithValue("@ID", currentUser.ID);
 
             MySqlDataReader reader = await command.ExecuteReaderAsync();
@@ -80,20 +80,6 @@ namespace bazyProjektBlazor.Services
                 response.Add(await usersService.GetUserById(reader.GetInt32("memberID")));
             }
 
-            using var leaderConnection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
-
-            leaderConnection.Open();
-
-            using var leaderCommand = new MySqlCommand("SELECT teams.leaderID FROM teams INNER JOIN teamsmembers ON teams.ID = teamsmembers.teamID AND teamsmembers.memberID = @ID", leaderConnection);
-            leaderCommand.Parameters.AddWithValue("@ID", currentUser.ID);
-
-            reader = await leaderCommand.ExecuteReaderAsync();
-
-            while (await reader.ReadAsync())
-            {
-                response.Add(await usersService.GetUserById(reader.GetInt32("leaderID")));
-            }
-
             return await Task.FromResult(response);
         }
 
@@ -104,7 +90,7 @@ namespace bazyProjektBlazor.Services
 
             connection.Open();
 
-            using var command = new MySqlCommand("SELECT teams.ID FROM teams WHERE teams.leaderID=@ID", connection);
+            using var command = new MySqlCommand("SELECT teamsmembers.teamID FROM teamsmembers WHERE teamsmembers.memberID = @ID AND teamsmembers.isLeader = 1", connection);
 
             command.Parameters.AddWithValue("@ID", currentUser.ID);
 
@@ -127,7 +113,7 @@ namespace bazyProjektBlazor.Services
             connection.Open();
 
             using var command = new MySqlCommand(
-                "SELECT teams.ID, teams.name, teams.leaderID, " +
+                "SELECT teams.ID, teams.name," +
                 "departments.name " +
                 "FROM teams " +
                 "INNER JOIN departments on teams.departmentID = departments.ID " +
@@ -140,22 +126,30 @@ namespace bazyProjektBlazor.Services
             List<User> members = [];
             while (await reader.ReadAsync())
             {
-
                 response.ID = reader.GetInt32(0);
                 response.Name = reader.GetString(1);
-                response.Leader = await usersService.GetUserById(reader.GetInt32(2));
-                response.DepartmentName = reader.GetString(3);
+                response.DepartmentName = reader.GetString(2);
 
                 using var membersConnection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
                 membersConnection.Open();
 
-                using var membersCommand = new MySqlCommand("SELECT users.ID FROM users INNER JOIN teamsmembers ON teamsmembers.memberID = users.ID WHERE teamsmembers.teamID = @ID", membersConnection);
+                using var membersCommand = new MySqlCommand("SELECT users.ID FROM users INNER JOIN teamsmembers ON teamsmembers.memberID = users.ID WHERE teamsmembers.teamID = @ID ORDER BY teamsmembers.isLeader DESC", membersConnection);
                 membersCommand.Parameters.AddWithValue("@ID", id);
                 MySqlDataReader membersReader = await membersCommand.ExecuteReaderAsync();
 
+                bool leader = true;
+
                 while (await membersReader.ReadAsync())
                 {
-                    members.Add(await usersService.GetUserById(membersReader.GetInt32("ID")));
+                    if (leader)
+                    {
+                        response.Leader = await usersService.GetUserById(membersReader.GetInt32("ID"));
+                        leader = false;
+                    }
+                    else
+                    {
+                        members.Add(await usersService.GetUserById(membersReader.GetInt32("ID")));
+                    }
                 }
             }
             response.Members = members;

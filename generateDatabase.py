@@ -94,12 +94,12 @@ for i in range(numberOfDepartmens):
             leaders[j] = random.randint(2, numberOfUsers)
 
     allLeader.append(leaders)
-    sql = "INSERT INTO teams(name, departmentID, leaderID) VALUES "
+    sql = "INSERT INTO teams(name, departmentID) VALUES "
     for k in range(numberOfTeams):
         if k != numberOfTeams - 1:
-            sql += f"('{teams[k]}', {i+1}, {leaders[k]}), "
+            sql += f"('{teams[k]}', {i+1}), "
         else:
-            sql += f"('{teams[k]}', {i+1}, {leaders[k]})"
+            sql += f"('{teams[k]}', {i+1})"
     sql += ";\n"
     file.write(sql)
     # ////////////////////////////////////////////////////////////////////////#
@@ -113,13 +113,15 @@ for i in range(numberOfDepartmens):
 
         allMembers.append(membersID)
 
-        sql = "INSERT INTO teamsmembers(teamID, memberID) VALUES "
+        sql = "INSERT INTO teamsmembers(teamID, memberID, isLeader) VALUES "
+
+        sql += f"({teamID + 1}, {leaders[k]}, 1), "
 
         for m in range(numberOfMembers):
             if m != numberOfMembers - 1:
-                sql += f"({teamID + 1}, {membersID[m]}), "
+                sql += f"({teamID + 1}, {membersID[m]}, 0), "
             else:
-                sql += f"({teamID + 1}, {membersID[m]})"
+                sql += f"({teamID + 1}, {membersID[m]}, 0)"
 
         sql += ";\n"
         file.write(sql)
@@ -160,7 +162,7 @@ for i in range(numberOfMeetings):
     typeID = random.randint(1, maxMeetingType)
     statusID = random.randint(1, maxMeetingStatus)
     repID = random.randint(1, maxMeetingRepeating)
-    sql = f"INSERT INTO meetings(title, date, description, creatorID, typeID, statusID, repeatingID) VALUES ('{title}','{date}','{description}',{creatorID},{typeID},{statusID},{repID})"
+    sql = f"INSERT INTO meetings(title, date, description, typeID, statusID, repeatingID) VALUES ('{title}','{date}','{description}',{typeID},{statusID},{repID})"
     sql += ";\n"
     file.write(sql)
     # ////////////////////////////////////////////////////////////////////////#
@@ -171,12 +173,13 @@ for i in range(numberOfMeetings):
     for k in range(numberOfMeetingMembers):
         while meetingMembers[k] == creatorID:
             meetingMembers[k] = random.randint(1, numberOfUsers)
-    sql = "INSERT INTO meetingsmembers(meetingID, memberID) VALUES "
+    sql = "INSERT INTO meetingsmembers(meetingID, memberID, isCreator) VALUES "
+    sql += f"({meetingID}, {creatorID}, 1), "
     for j in range(numberOfMeetingMembers):
         if j != numberOfMeetingMembers - 1:
-            sql += f"({meetingID}, {meetingMembers[j]}), "
+            sql += f"({meetingID}, {meetingMembers[j]}, 0), "
         else:
-            sql += f"({meetingID}, {meetingMembers[j]})"
+            sql += f"({meetingID}, {meetingMembers[j]}, 0)"
     sql += ";\n"
     file.write(sql)
     # ////////////////////////////////////////////////////////////////////////#

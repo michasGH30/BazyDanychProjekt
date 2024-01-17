@@ -45,7 +45,7 @@ namespace bazyProjektBlazor.Services
 
             connection.Open();
 
-            using var command = new MySqlCommand("SELECT users.ID FROM users LEFT JOIN teamsmembers ON users.ID = teamsmembers.memberID LEFT JOIN teams ON teamsmembers.teamID = teams.ID LEFT JOIN departments ON teams.departmentID = departments.ID WHERE teamsmembers.memberID IS NULL AND teams.leaderID IS NULL AND departments.directorID IS NULL AND users.isAdmin = false;", connection);
+            using var command = new MySqlCommand("SELECT users.ID FROM users LEFT JOIN teamsmembers ON users.ID = teamsmembers.memberID LEFT JOIN departments ON users.ID = departments.directorID WHERE teamsmembers.memberID IS NULL AND departments.directorID IS NULL AND users.isAdmin = false", connection);
 
             MySqlDataReader reader = await command.ExecuteReaderAsync();
 
