@@ -3,7 +3,10 @@
         <p>@team.Name</p>
     </CardTitle>
     <CardBody>
-        <p><b>Department Name: </b>@team.DepartmentName</p>
+        @foreach(string name in team.DepartmentsNames)
+        {
+            <p><b>Department Name: </b>@name</p>
+        }
         <h4>Leader</h4>
         <UserComponent user="@team.Leader" />
         <Button Type="ButtonType.Button" Color="ButtonColor.Primary" @onclick="ToggleContentAsync"><Icon Name="@iconName" /> Toggle team members</Button>

@@ -55,12 +55,12 @@ namespace bazyProjektBlazor.Services
                 List<Team> teams = [];
                 using var teamConnection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
                 teamConnection.Open();
-                using var teamCommand = new MySqlCommand("SELECT teams.ID FROM teams WHERE teams.departmentID=@ID", teamConnection);
+                using var teamCommand = new MySqlCommand("SELECT teamsdepartments.teamID FROM teamsdepartments WHERE teamsdepartments.departmentID=@ID", teamConnection);
                 teamCommand.Parameters.AddWithValue("@ID", id);
                 MySqlDataReader teamsReader = await teamCommand.ExecuteReaderAsync();
                 while (await teamsReader.ReadAsync())
                 {
-                    Team team = await teamsService.GetTeamByID(teamsReader.GetInt32("ID"));
+                    Team team = await teamsService.GetTeamByID(teamsReader.GetInt32("teamID"));
                     teams.Add(team);
                 }
                 response.Teams = teams;
@@ -96,7 +96,7 @@ namespace bazyProjektBlazor.Services
 
             connection.Open();
 
-            using var command = new MySqlCommand("SELECT teamsmembers.memberID FROM teamsmembers INNER JOIN teams ON teamsmembers.teamID = teams.ID INNER JOIN departments ON teams.departmentID = departments.ID WHERE departments.directorID = @ID", connection);
+            using var command = new MySqlCommand("SELECT teamsmembers.memberID FROM teamsmembers INNER JOIN teamsdepartments ON teamsmembers.teamID = teamsdepartments.teamID INNER JOIN departments ON teamsdepartments.departmentID = departments.ID WHERE departments.directorID = @ID", connection);
             command.Parameters.AddWithValue("@ID", currentUser.ID);
 
             MySqlDataReader reader = await command.ExecuteReaderAsync();

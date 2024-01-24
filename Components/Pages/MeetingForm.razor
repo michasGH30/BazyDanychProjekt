@@ -36,7 +36,7 @@ else
             }
         </div>
         <div class="row">
-            @if ((!meetingID.HasValue && repetitions != null && types != null) || (meetingID.HasValue && repetitions != null && types != null && statuses != null))
+            @if ((!meetingID.HasValue && repetitions != null && types != null && rooms != null) || (meetingID.HasValue && repetitions != null && types != null && statuses != null && rooms != null))
             {
                 <EditForm Model="request" FormName="CreateMeeting" OnValidSubmit="OnValidSubmit">
                     <DataAnnotationsValidator />
@@ -44,40 +44,63 @@ else
                     <div class="row">
                         <div class="col-3">
                             <div class="form-group my-2">
-                                <InputText id="name" @bind-Value="request.Title" placeholder="Title" type="text" class="form-control"></InputText>
+                                <InputText id="name" @bind-Value="request.Title" placeholder="Title" type="text" class="form-control" autofocus/>
 
                             </div>
                             <div class="form-group my-2">
-                                <DateInput TValue="DateOnly" @bind-Value="request.Date" Placeholder="Date" Min="@minDate" Max="@maxDate" EnableMinMax="true" />
+                                <input type="datetime-local" @bind-value="request.Date" min="@minDate.ToString("yyyy-MM-dd HH:mm")" max="@maxDate.ToString("yyyy-MM-dd HH:mm")" class="form-control">
+                               
                             </div>
                             <div class="form-group my-2">
-                                <InputTextArea @bind-Value="request.Description" class="form-control"></InputTextArea>
+                                <InputTextArea @bind-Value="request.Description" class="form-control" placeholder="Description"></InputTextArea>
                             </div>
                             <div class="form-group my-2">
+                                <label>
+                                    Online:
+                                    <InputCheckbox @bind-Value="request.IsOnline" @onclick="IsOnliceChanged"/>
+                                </label>
+                            </div>
+                            <div class="form-group my-2">
+                                <label>Pokój:<br/>
+                                    <InputSelect @bind-Value="request.RoomID" class="form-control" disabled="@disabledRoomsSelect">
+                                        @foreach(RoomResponse room in rooms)
+                                        {
+                                            <option value="@room.ID">Pokój numer: @room.Number</option>
+                                        }
+                                    </InputSelect>
+                                </label>
+                            </div>
+                            <div class="form-group my-2">
+                                <label>Repetition of meeting:
                                 <InputSelect @bind-Value="request.RepetitionOfMeeting" class="form-control">
                                     @foreach (TypeStatusRepetitionOfMeetingResponse r in repetitions)
                                     {
                                         <option value="@r.ID">@r.Name</option>
                                     }
                                 </InputSelect>
+                                </label>
                             </div>
                             <div class="form-group my-2">
+                                <label>Type of meeting:
                                 <InputSelect @bind-Value="request.TypeOfMeeting" class="form-control">
                                     @foreach (TypeStatusRepetitionOfMeetingResponse t in types)
                                     {
                                         <option value="@t.ID">@t.Name</option>
                                     }
                                 </InputSelect>
+                                </label>
                             </div>
                             @if (meetingID.HasValue)
                             {
                                 <div class="form-group my-2">
+                                    <label>Status of meeting:
                                     <InputSelect @bind-Value="request.StatusOfMeeting" class="form-control">
                                         @foreach (TypeStatusRepetitionOfMeetingResponse s in statuses)
                                         {
                                             <option value="@s.ID">@s.Name</option>
                                         }
                                     </InputSelect>
+                                    </label>
                                 </div>
                             }
                             <button class="btn btn-primary">SUBMIT</button>
@@ -153,11 +176,12 @@ else
     [Parameter]
     public int? meetingID { get; set; }
     CreateMeetingRequest request = new();
-    private DateOnly minDate;
-    private DateOnly maxDate;
+    private DateTime minDate;
+    private DateTime maxDate;
     private List<TypeStatusRepetitionOfMeetingResponse> types;
     private List<TypeStatusRepetitionOfMeetingResponse> repetitions;
     private List<TypeStatusRepetitionOfMeetingResponse> statuses;
+    private List<RoomResponse> rooms;
     private bool isLogged = false;
     private List<User> users;
     private List<UserForm> allUserForms = [];
@@ -169,6 +193,7 @@ else
     private List<UserFormChange> usersChangesList;
     string[] roles;
     bool allUsersIsActive;
+    bool disabledRoomsSelect;
 
     protected override async Task OnInitializedAsync()
     {
@@ -182,13 +207,15 @@ else
             var rolesResponse = await loginService.GetRoles();
             roles = rolesResponse.Split(",");
             allUsersIsActive = roles.Contains("admin");
-            minDate = DateOnly.FromDateTime(DateTime.Now.AddYears(-1));
-            maxDate = DateOnly.FromDateTime(DateTime.Now.AddYears(1));
+            minDate = DateTime.Now.AddYears(-1);
+            maxDate = DateTime.Now.AddYears(1);
             types = await meetingService.GetTypesOfMeeting();
             repetitions = await meetingService.GetRepetitionOfMeeting();
+            rooms = await meetingService.GetRooms();
             users = await usersService.GetAllUsers();
             usersChangesList = [];
             allUserForms = users.Select(user => new UserForm(user)).ToList();
+            disabledRoomsSelect = false;
             if (roles.Contains("director"))
             {
                 var usersFromMyDepartment = await departmentService.GetUsersFromMyDepartment();
@@ -222,6 +249,21 @@ else
                 request.Date = meeting.Date;
 
                 request.Description = meeting.Description.Equals("Empty description") ? null : meeting.Description;
+                if (!meeting.IsOnline)
+                {
+                    disabledRoomsSelect = false;
+                    foreach(var room in rooms)
+                    {
+                        if(room.Number == meeting.RoomNumber)
+                        {
+                            request.RoomID = room.ID;
+                        }
+                    }
+                }
+                else
+                {
+                    disabledRoomsSelect = true;
+                }
                 foreach (var rep in repetitions)
                 {
                     if (rep.Name.Equals(meeting.RepetitionOfMeeting))
@@ -281,8 +323,17 @@ else
                     }
                 }
             }
+            else
+            {
+                request.Date = DateTime.Now;
+            }
         }
 
+    }
+
+    protected void IsOnliceChanged()
+    {
+        disabledRoomsSelect = !disabledRoomsSelect;
     }
 
     protected void CheckBoxChanged(MouseEventArgs args, bool IsSelected, int ID)

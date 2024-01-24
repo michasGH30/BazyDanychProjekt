@@ -6,6 +6,14 @@
     <CardBody>
         <p><b>Title: </b>@meetingSummary.Title</p>
         <p><b>Date: </b>@meetingSummary.Date</p>
+        @if(meetingSummary.IsOnline)
+        {
+            <Button Color="ButtonColor.Secondary" Class="mx-1 my-1" Type="ButtonType.Link" To="@meetingSummary.Link" Target="Target.Blank">Meeting link</Button>
+        }
+        else
+        {
+            <p><b>Room: </b>@meetingSummary.RoomNumber</p>
+        }
         @switch (meetingSummary.Status)
         {
             case "scheduled":

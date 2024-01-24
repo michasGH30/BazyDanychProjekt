@@ -6,13 +6,19 @@
 
         public string Title { get; set; } = string.Empty;
 
-        public DateOnly Date { get; set; }
+        public DateTime Date { get; set; }
 
         public string Description { get; set; } = string.Empty;
 
         public User Creator { get; set; }
 
         public bool IsCreator { get; set; }
+
+        public bool IsOnline { get; set; }
+
+        public string Link { get; set; } = string.Empty;
+
+        public int RoomNumber { get; set; }
 
         public string TypeOfMeeting { get; set; } = string.Empty;
 

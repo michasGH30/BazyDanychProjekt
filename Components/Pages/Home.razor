@@ -2,6 +2,7 @@
 @inject NavigationManager navigationManager
 @inject ILoginService loginService
 @inject IMeetingsService meetingService
+@attribute [StreamRendering(true)]
 
 <PageTitle>Home</PageTitle>
 <div class="container-fluid">
@@ -84,7 +85,7 @@
                 }
                 else
                 {
-                <div class="col-12 d-flex justify-content-center"><p>Loading all meetings ...</p></div>
+                    <div class="col-12 d-flex justify-content-center"><p>Loading all meetings ...</p></div>
                 }
             </div>
 

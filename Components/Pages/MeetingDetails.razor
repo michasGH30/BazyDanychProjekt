@@ -32,6 +32,14 @@
                         <div class="@styleClass">
                             <p><b>Title:</b> @meeting.Title</p>
                             <p><b>Date:</b> @meeting.Date</p>
+                            @if(meeting.IsOnline)
+                            {
+                                <Button Color="ButtonColor.Secondary" Class="mx-1 my-1" Type="ButtonType.Link" To="@meeting.Link" Target="Target.Blank">Meeting link</Button>
+                            }
+                            else
+                            {
+                                <p><b>Room number: </b>@meeting.RoomNumber</p>
+                            }
                             <p><b>Type:</b> @Utility.Capitalise(meeting.TypeOfMeeting)</p>
                             <p style="white-space: pre-line"><b>Description: </b><br />@meeting.Description</p>
                             <p><b>Repetition:</b> @Utility.Capitalise(meeting.RepetitionOfMeeting)</p>

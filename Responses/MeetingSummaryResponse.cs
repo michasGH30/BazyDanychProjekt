@@ -6,7 +6,13 @@
 
         public string Title { get; set; } = string.Empty;
 
-        public DateOnly Date { get; set; }
+        public DateTime Date { get; set; }
+
+        public bool IsOnline { get; set; }
+
+        public string Link { get; set; } = string.Empty;
+
+        public int RoomNumber { get; set; }
 
         public bool Creator { get; set; }
 
