@@ -1,4 +1,5 @@
 import random
+import uuid
 
 file = open("file.sql", "w", encoding="utf-8")
 
@@ -10,6 +11,8 @@ departmentList = ["HR", "Administration",
 numberOfTeams = 3
 numberOfMembers = 4
 
+teamInTwoDepartmentsProbalitity = 9  # between 1 and 10
+
 numberOfMeetings = 250
 
 minYear = 2023
@@ -17,13 +20,19 @@ maxYear = 2024
 month = 12
 day = 28
 
+maxHour = 23
+maxMinute = 59
+maxSecond = 59
+
+isOnlinePropability = 3  # between 1 and 10
+
 numberOfWordsInTitleOfMeeting = 3
 
 emptyDescriptionPropability = 7  # between 1 and 10
 
-maxMeetingType = 7
-maxMeetingStatus = 3
-maxMeetingRepeating = 7
+maxMeetingType = 7  # must match the below written sql query
+maxMeetingStatus = 3  # must match the below written sql query
+maxMeetingRepeating = 7  # must match the below written sql query
 
 minMeetingsOfMembers = 10
 maxMeetingsOfMembers = 20
@@ -35,7 +44,12 @@ wordsInMessageCount = 2
 minAttachmentsInMeeting = 15
 maxAttachmentsInMeeting = 20
 wordsInNameCount = 2
-maxAttachmentsTypes = 9
+maxAttachmentsTypes = 9  # must match the below written sql query
+
+numberOfRooms = 10
+
+minRoom = 10
+maxRoom = 100
 
 names = ["Aadam", "Rihanna", "Hollie", "Madeleine", "Carolyn", "Axel", "Ruqayyah", "Jennie", "Shirley", "Keira", "Kelsie", "Levi", "Macie", "Judy", "Neha", "Honey", "Bella", "Vivian", "Charlotte", "Connor", "Tori", "Dawid", "Roosevelt", "Rachel", "Fay", "Francesco", "Mia", "Romeo", "Jamie", "Emil", "Danny", "Nicola", "Abbas", "Savannah", "Kiran", "Daniella", "Felicity", "Brooklyn", "Frederic", "Velma", "Aditya", "Umair", "Scarlet", "Abby", "Melanie", "Edmund", "Halima", "Zane", "Jessie",
          "Amanda", "Maia", "Stephanie", "Donald", "Anoushka", "Dean", "Hugh", "Kamran", "Maddie", "Abi", "Tristan", "Abdur", "Gina", "Kaitlin", "Kyra", "Oliwier", "Amir", "Sidney", "Richie", "Aran", "Aiza", "Samira", "Eugene", "Fintan", "Krish", "Leyla", "Ieuan", "Heath", "Shivam", "Elouise", "Amaya", "Ana", "Ava-Rose", "Cody", "Brett", "Ffion", "Subhaan", "Ahmed", "Eileen", "Moses", "Alina", "Delores", "Iqra", "Kristen", "Josiah", "Megan", "Brooke", "Kieran", "Lily-May", "Lilly-Rose", "Briony"]
@@ -44,7 +58,39 @@ surnames = ["Lester", "Nguyen", "Rojas", "Schultz", "Nicholson", "Mcknight", "Ma
             "Ibarra", "Grant", "Vang", "Odonnell", "Wheeler", "Rubio", "Davidson", "Spence", "Oneill", "Ali", "Smith", "Soto", "Ruiz", "Valdez", "Wolf", "Vaughn", "Logan", "Butler", "Willis", "Lopez", "Gordon", "Salinas", "Nichols", "Connor", "Woodard", "Abbott", "Garza", "Mcdonald", "Pacheco", "Fernandez", "Merrill", "Barlow", "Quinn", "Peterson", "Mendoza", "Owens", "Hayden", "Raymond", "Rivers", "Carlson", "Bowers", "Harvey", "Beck", "Shannon", "Burgess", "Moran", "Mcmillan", "Flores", "Stanton", "Atkinson"]
 
 
-sql = "INSERT INTO users(firstName, lastName, email, password, isAdmin) VALUES "
+sql = "START TRANSACTION;"
+
+file.write(sql)
+
+sql = "\nINSERT INTO statusofmeeting (ID, status) VALUES (1, 'scheduled'), (2, 'rescheduled'), (3, 'cancelled');"
+
+file.write(sql)
+
+sql = "\nINSERT INTO typeofmeeting (ID, type) VALUES (1, 'summary'), (2, 'project'), (3, 'customerComments'), (4, 'stand-up'), (5, 'training'), (6, 'implementation'), (7, 'brainstorming');"
+
+file.write(sql)
+
+sql = "\nINSERT INTO typesofattachments (ID, type) VALUES (1, 'Word Document'), (2, 'PDF Document'), (3, 'Image'), (4, 'Audio'), (5, 'Video'), (6, 'Spreadsheet'), (7, 'Presentation'), (8, 'Code'), (9, 'Zip File');"
+
+file.write(sql)
+
+sql = "\nINSERT INTO repetitionofmeeting (ID, repetition) VALUES (1, 'one-time'), (2, 'daily'), (3, 'weekly'), (4, 'monthly'), (5, 'quarterly'), (6, 'yearly'), (7, 'irregular');"
+
+file.write(sql)
+
+roomsNumbers = random.sample(range(minRoom, maxRoom), numberOfRooms)
+
+sql = "\nINSERT INTO rooms(ID, roomNumber) VALUES "
+
+for i in range(numberOfRooms):
+    if i != numberOfRooms - 1:
+        sql += f"({i + 1}, {roomsNumbers[i]}), "
+    else:
+        sql += f"({i + 1}, {roomsNumbers[i]});"
+
+file.write(sql)
+
+sql = "\nINSERT INTO users(firstName, lastName, email, password, isAdmin) VALUES "
 
 # password -> pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM= -> "123"
 
@@ -94,15 +140,33 @@ for i in range(numberOfDepartmens):
             leaders[j] = random.randint(2, numberOfUsers)
 
     allLeader.append(leaders)
-    sql = "INSERT INTO teams(name, departmentID) VALUES "
+    sql = "INSERT INTO teams(name) VALUES "
     for k in range(numberOfTeams):
         if k != numberOfTeams - 1:
-            sql += f"('{teams[k]}', {i+1}), "
+            sql += f"('{teams[k]}'), "
         else:
-            sql += f"('{teams[k]}', {i+1})"
+            sql += f"('{teams[k]}')"
     sql += ";\n"
     file.write(sql)
     # ////////////////////////////////////////////////////////////////////////#
+
+    for k in range(numberOfTeams):
+        sql = "INSERT INTO teamsdepartments(teamID, departmentID) VALUES "
+        teamsDepartments = random.randint(
+            1, 10) < teamInTwoDepartmentsProbalitity
+
+        if teamsDepartments:
+            departmentID = random.randint(1, numberOfDepartmens)
+            sql += f"({teamID + 1 + k}, {departmentID});\n"
+        else:
+            for l in range(0, 2):
+                departmentID = random.randint(1, numberOfDepartmens)
+                if l == 0:
+                    sql += f"({teamID + 1 + k}, {departmentID}), "
+                else:
+                    sql += f"({teamID + 1 + k}, {departmentID});\n"
+
+        file.write(sql)
 
     for k in range(numberOfTeams):
         membersID = random.sample(range(2, numberOfUsers + 1), numberOfMembers)
@@ -162,9 +226,28 @@ for i in range(numberOfMeetings):
     typeID = random.randint(1, maxMeetingType)
     statusID = random.randint(1, maxMeetingStatus)
     repID = random.randint(1, maxMeetingRepeating)
-    sql = f"INSERT INTO meetings(title, date, description, typeID, statusID, repeatingID) VALUES ('{title}','{date}','{description}',{typeID},{statusID},{repID})"
-    sql += ";\n"
-    file.write(sql)
+
+    time = str(random.randint(0, maxHour))+":" + str(random.randint(0,
+                                                                    maxMinute))+":"+str(random.randint(0, maxSecond))
+
+    date += f" {time}"
+
+    link = "example.com/"
+
+    isOnline = random.randint(1, 10) > isOnlinePropability
+
+    roomNumber = random.randint(1, numberOfRooms)
+
+    if isOnline:
+        link += str(uuid.uuid4())
+
+    if isOnline:
+        sql = f"INSERT INTO meetings(title, date, description, isOnline, link, roomID, typeID, statusID, repeatingID) VALUES ('{title}','{date}','{description}','1','{link}',NULL,{typeID},{statusID},{repID});\n"
+        file.write(sql)
+    else:
+        sql = f"INSERT INTO meetings(title, date, description, isOnline, link, roomID, typeID, statusID, repeatingID) VALUES ('{title}','{date}','{description}','0',NULL,{roomNumber},{typeID},{statusID},{repID});\n"
+        file.write(sql)
+
     # ////////////////////////////////////////////////////////////////////////#
     numberOfMeetingMembers = random.randint(
         minMeetingsOfMembers, maxMeetingsOfMembers)
@@ -232,5 +315,7 @@ for i in range(numberOfMeetings):
     sql += ";\n"
     file.write(sql)
     meetingID += 1
+
+file.write("COMMIT;")
 
 file.close()

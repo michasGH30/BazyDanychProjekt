@@ -21,7 +21,7 @@ namespace bazyProjektBlazor.Services
         {
             List<DepartmentByIDResponse> response = [];
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            connection.Open();
+            await connection.OpenAsync();
 
             using var command = new MySqlCommand(
                  "SELECT departments.ID FROM departments", connection);
@@ -39,7 +39,7 @@ namespace bazyProjektBlazor.Services
         {
             DepartmentByIDResponse response = new();
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            connection.Open();
+            await connection.OpenAsync();
             using var command = new MySqlCommand("SELECT departments.ID, departments.name, departments.directorID FROM departments WHERE departments.ID=@ID", connection);
             command.Parameters.AddWithValue("@ID", id);
             MySqlDataReader reader = await command.ExecuteReaderAsync();
@@ -54,7 +54,7 @@ namespace bazyProjektBlazor.Services
                 response.Department = department;
                 List<Team> teams = [];
                 using var teamConnection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
-                teamConnection.Open();
+                await teamConnection.OpenAsync();
                 using var teamCommand = new MySqlCommand("SELECT teamsdepartments.teamID FROM teamsdepartments WHERE teamsdepartments.departmentID=@ID", teamConnection);
                 teamCommand.Parameters.AddWithValue("@ID", id);
                 MySqlDataReader teamsReader = await teamCommand.ExecuteReaderAsync();
@@ -75,7 +75,7 @@ namespace bazyProjektBlazor.Services
 
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
-            connection.Open();
+            await connection.OpenAsync();
 
             using var command = new MySqlCommand("SELECT departments.ID FROM departments WHERE departments.directorID=@ID", connection);
             command.Parameters.AddWithValue("@ID", currentUser.ID);
@@ -94,7 +94,7 @@ namespace bazyProjektBlazor.Services
 
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
-            connection.Open();
+            await connection.OpenAsync();
 
             using var command = new MySqlCommand("SELECT teamsmembers.memberID FROM teamsmembers INNER JOIN teamsdepartments ON teamsmembers.teamID = teamsdepartments.teamID INNER JOIN departments ON teamsdepartments.departmentID = departments.ID WHERE departments.directorID = @ID", connection);
             command.Parameters.AddWithValue("@ID", currentUser.ID);

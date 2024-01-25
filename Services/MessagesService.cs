@@ -22,7 +22,7 @@ namespace bazyProjektBlazor.Services
         {
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
-            connection.Open();
+            await connection.OpenAsync();
 
             using var command = new MySqlCommand("DELETE FROM meetingschats WHERE ID = @ID", connection);
             command.Parameters.AddWithValue("@ID", ID);
@@ -40,7 +40,7 @@ namespace bazyProjektBlazor.Services
 
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
-            connection.Open();
+            await connection.OpenAsync();
 
             using var command = new MySqlCommand("SELECT meetingschats.ID, meetingschats.message, meetingschats.senderID FROM meetingschats WHERE meetingschats.ID = @ID", connection);
             command.Parameters.AddWithValue("@ID", ID);
@@ -64,7 +64,7 @@ namespace bazyProjektBlazor.Services
 
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
-            connection.Open();
+            await connection.OpenAsync();
 
             using var command = new MySqlCommand("INSERT INTO meetingschats(message,meetingID,senderID) VALUES(@M, @MEETINGID, @SID)", connection);
             command.Parameters.AddWithValue("@M", message.Message);
@@ -91,7 +91,7 @@ namespace bazyProjektBlazor.Services
 
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
-            connection.Open();
+            await connection.OpenAsync();
 
             using var command = new MySqlCommand("UPDATE meetingschats SET message = @M WHERE ID = @ID", connection);
             command.Parameters.AddWithValue("@M", message.Message);

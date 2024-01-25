@@ -208,7 +208,7 @@
     [Inject]
     protected ToastService toastService { get; set; }
     bool isLogged = false;
-    Meeting meeting;
+    Meeting? meeting;
     string styleClass = "";
     string[] roles;
     Collapse collapseMessages = default!;
@@ -227,26 +227,32 @@
             iconNameMessages = IconName.ArrowsExpand;
             iconNameAttachments = IconName.ArrowsExpand;
             meeting = await meetingService.GetMeetingByID(meetingID);
-            if (meeting.Description.Equals("Empty description"))
+
+            if(meeting != null)
             {
-                meeting.Description = "";
+                if (meeting.Description.Equals("Empty description"))
+                {
+                    meeting.Description = "";
+                }
+                var rolesResponse = await loginService.GetRoles();
+                roles = rolesResponse.Split(",");
+                if (roles.Contains("admin"))
+                {
+                    meeting.IsCreator = true;
+                    meeting.Attachments.ForEach(a => a.IsSender = true);
+                    meeting.Messages.ForEach(m => m.IsSender = true);
+                }
+                if (meeting.IsCreator)
+                {
+                    styleClass = "col-4";
+                }
+                else
+                {
+                    styleClass = "col-6";
+                }
             }
-            var rolesResponse = await loginService.GetRoles();
-            roles = rolesResponse.Split(",");
-            if (roles.Contains("admin"))
-            {
-                meeting.IsCreator = true;
-                meeting.Attachments.ForEach(a => a.IsSender = true);
-                meeting.Messages.ForEach(m => m.IsSender = true);
-            }
-            if (meeting.IsCreator)
-            {
-                styleClass = "col-4";
-            }
-            else
-            {
-                styleClass = "col-6";
-            }
+
+            
         }
     }
 

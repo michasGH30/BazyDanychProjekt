@@ -18,7 +18,7 @@ namespace bazyProjektBlazor.Services
         {
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
-            connection.Open();
+            await connection.OpenAsync();
 
             using var command = new MySqlCommand("SELECT ID, firstName, lastName, email FROM users WHERE ID != @ID", connection);
             command.Parameters.AddWithValue("@ID", currentUser.ID);
@@ -43,7 +43,7 @@ namespace bazyProjektBlazor.Services
 
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
-            connection.Open();
+            await connection.OpenAsync();
 
             using var command = new MySqlCommand("SELECT users.ID FROM users LEFT JOIN teamsmembers ON users.ID = teamsmembers.memberID LEFT JOIN departments ON users.ID = departments.directorID WHERE teamsmembers.memberID IS NULL AND departments.directorID IS NULL AND users.isAdmin = false", connection);
 
@@ -68,7 +68,7 @@ namespace bazyProjektBlazor.Services
                 Email = "email"
             };
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            connection.Open();
+            await connection.OpenAsync();
 
             using var command = new MySqlCommand("SELECT firstName, lastName, email FROM users WHERE ID=@ID", connection);
             command.Parameters.AddWithValue("@ID", id);

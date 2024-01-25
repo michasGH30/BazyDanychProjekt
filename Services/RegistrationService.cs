@@ -12,10 +12,10 @@ namespace bazyProjektBlazor.Services
     {
         public async Task<int> Register(RegistrationRequest request)
         {
-            using var checkEmailConnection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            checkEmailConnection.Open();
+            using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            await connection.OpenAsync();
 
-            using var checkEmailCommand = new MySqlCommand("SELECT users.ID FROM users WHERE email=@email", checkEmailConnection);
+            using var checkEmailCommand = new MySqlCommand("SELECT users.ID FROM users WHERE email=@email", connection);
 
             checkEmailCommand.Parameters.AddWithValue("@email", request.Email);
 
@@ -26,11 +26,9 @@ namespace bazyProjektBlazor.Services
                 return await Task.FromResult(1);
             }
 
-            using var registerConnection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            await reader.CloseAsync();
 
-            registerConnection.Open();
-
-            using var registerCommand = new MySqlCommand("INSERT INTO users(firstName, lastName, email, password) VALUES (@firstName, @lastName, @email, @password)", registerConnection);
+            using var registerCommand = new MySqlCommand("INSERT INTO users(firstName, lastName, email, password) VALUES (@firstName, @lastName, @email, @password)", connection);
             registerCommand.Parameters.AddWithValue("@firstName", request.FirstName);
             registerCommand.Parameters.AddWithValue("@lastName", request.LastName);
             registerCommand.Parameters.AddWithValue("@email", request.Email);

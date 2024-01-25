@@ -27,7 +27,7 @@ namespace bazyProjektBlazor.Services
 
             using var connetion = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
-            connetion.Open();
+            await connetion.OpenAsync();
 
             using var command = new MySqlCommand("INSERT INTO meetingsattachments(name, typeID, meetingID, senderID) VALUES (@NAME,@TID,@MID,@SID)", connetion);
             command.Parameters.AddWithValue("@NAME", request.Name);
@@ -55,7 +55,7 @@ namespace bazyProjektBlazor.Services
 
             using var connetion = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
-            connetion.Open();
+            await connetion.OpenAsync();
 
             using var command = new MySqlCommand("SELECT typesofattachments.ID, typesofattachments.type FROM typesofattachments", connetion);
 
@@ -79,7 +79,7 @@ namespace bazyProjektBlazor.Services
 
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
-            connection.Open();
+            await connection.OpenAsync();
 
             using var command = new MySqlCommand("SELECT meetingsattachments.ID, meetingsattachments.name, typesofattachments.type, meetingsattachments.senderID FROM meetingsattachments INNER JOIN typesofattachments on meetingsattachments.typeID = typesofattachments.ID WHERE meetingsattachments.ID = @ID", connection);
 
@@ -103,7 +103,7 @@ namespace bazyProjektBlazor.Services
         {
             using var connetion = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
-            connetion.Open();
+            await connetion.OpenAsync();
 
             using var command = new MySqlCommand("SELECT typesofattachments.type FROM typesofattachments WHERE typesofattachments.ID = @ID", connetion);
             command.Parameters.AddWithValue("@ID", ID);
@@ -122,7 +122,7 @@ namespace bazyProjektBlazor.Services
         {
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
-            connection.Open();
+            await connection.OpenAsync();
 
             using var command = new MySqlCommand("DELETE FROM meetingsattachments WHERE ID = @ID", connection);
             command.Parameters.AddWithValue("@ID", ID);
@@ -141,7 +141,7 @@ namespace bazyProjektBlazor.Services
 
             using var connetion = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
-            connetion.Open();
+            await connetion.OpenAsync();
 
             using var command = new MySqlCommand("UPDATE meetingsattachments SET name = @NAME, typeID = @TID WHERE ID = @ID", connetion);
             command.Parameters.AddWithValue("@NAME", request.Name);

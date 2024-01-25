@@ -38,6 +38,7 @@
             {
                 if (myMeetingSummaries.Count > 0)
                 {
+
                     foreach (MeetingSummaryResponse response in myMeetingSummaries)
                     {
                         <div class="col-4"><MeetingSummaryComponent meetingSummary="@response" OnMeetingDeleted="HandleMeetingDeleted" /></div>
@@ -168,10 +169,11 @@
 
     string[] roles;
 
-    List<MeetingSummaryResponse> myMeetingSummaries;
-    List<MeetingSummaryResponse> allMeetingsSummaries;
-    List<MeetingSummaryResponse> meetingsSummariesFromMyDepartment;
-    List<MeetingSummaryResponse> meetingsSummariesFromMyTeam;
+    List<MeetingSummaryResponse>? myMeetingSummaries;
+    List<MeetingSummaryResponse>? allMeetingsSummaries;
+    List<MeetingSummaryResponse>? meetingsSummariesFromMyDepartment;
+    List<MeetingSummaryResponse>? meetingsSummariesFromMyTeam;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -211,13 +213,22 @@
 
     private void HandleMeetingDeleted(int id)
     {
-        myMeetingSummaries.RemoveAll(m => m.MeetingID == id);
+        if(myMeetingSummaries != null)
+        {
+            myMeetingSummaries.RemoveAll(m => m.MeetingID == id);
+        }
         if (allMeetingsSummaries != null)
+        {
             allMeetingsSummaries.RemoveAll(m => m.MeetingID == id);
+        }
         if (meetingsSummariesFromMyDepartment != null)
+        {
             meetingsSummariesFromMyDepartment.RemoveAll(m => m.MeetingID == id);
+        }
         if (meetingsSummariesFromMyTeam != null)
+        {
             meetingsSummariesFromMyTeam.RemoveAll(m => m.MeetingID == id);
+        }
 
         StateHasChanged();
     }

@@ -1,7 +1,7 @@
 ﻿password = 123
 
 michael.beetle@example.com - > admin -> ID = 1
-lily-may.rivers@example.com - > director -> ID = 18, department = 1
-aadam.moran@example.com -> leader, team -> 1
-oliwier.nicholson@example.com -> member of team -> ID = 65, team = 1
-aadam.graham@example.com -> free user
+shivam.giles@example.com - > director -> ID = 71, department = 1
+roosevelt.odonnell@example.com -> leader, ID = 48, team -> 1
+iqra.flynn@example.com -> member of team -> ID = 6, team = 1
+jennie.connor@example.com -> free user, ID = 2

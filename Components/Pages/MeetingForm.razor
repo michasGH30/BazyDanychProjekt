@@ -38,7 +38,7 @@ else
         <div class="row">
             @if ((!meetingID.HasValue && repetitions != null && types != null && rooms != null) || (meetingID.HasValue && repetitions != null && types != null && statuses != null && rooms != null))
             {
-                <EditForm Model="request" FormName="CreateMeeting" OnValidSubmit="OnValidSubmit">
+                <EditForm Model="request" FormName="CreateMeeting" OnSubmit="OnSubmit">
                     <DataAnnotationsValidator />
                     <ValidationSummary />
                     <div class="row">
@@ -195,6 +195,7 @@ else
     bool allUsersIsActive;
     bool disabledRoomsSelect;
 
+
     protected override async Task OnInitializedAsync()
     {
         isLogged = await loginService.IsLogged();
@@ -262,6 +263,7 @@ else
                 }
                 else
                 {
+                    request.IsOnline = meeting.IsOnline;
                     disabledRoomsSelect = true;
                 }
                 foreach (var rep in repetitions)
@@ -353,8 +355,38 @@ else
         }
     }
 
-    private async Task OnValidSubmit()
+    private async Task OnSubmit()
     {
+        if (!request.IsOnline && request.RoomID < 1)
+        {
+            toastService.Notify(new(ToastType.Danger, "If your meeting is offline, you must provide room number."));
+            return;
+        }
+
+        if(request.Title.Length == 0 || request.Title.Length > 50)
+        {
+            toastService.Notify(new(ToastType.Danger, "You need to provide title and it's length must be no more than 50 characters."));
+            return;
+        }
+
+        if(request.Description != null && request.Description.Length > 512)
+        {
+            toastService.Notify(new(ToastType.Danger, "Description must be no more than 512 characters."));
+            return;
+        }
+
+        if(request.TypeOfMeeting < 1)
+        {
+            toastService.Notify(new(ToastType.Danger, "Select correct type of meeting."));
+            return;
+        }
+
+        if(request.RepetitionOfMeeting < 1)
+        {
+            toastService.Notify(new(ToastType.Danger, "Select correct repetition of meeting."));
+            return;
+        }
+
         request.MembersID = [];
 
         if (meetingID.HasValue)
@@ -388,7 +420,9 @@ else
             foreach (var u in usersChangesList)
             {
                 if (u.IsSelected)
+                {
                     request.MembersID.Add(u);
+                }
             }
 
             var response = await meetingService.CreateMeeting(request);
@@ -409,7 +443,6 @@ else
                 allUserForms.ForEach(u => u.IsSelected = false);
             }
         }
-
-
     }
+
 }

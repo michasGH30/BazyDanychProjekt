@@ -8,6 +8,7 @@ namespace bazyProjektBlazor.Requests
         public int ID { get; set; }
 
         [Required(ErrorMessage = "Title is required.")]
+        [StringLength(50, ErrorMessage = "Title cannot be longer than 50 characters.")]
         public string Title { get; set; } = string.Empty;
 
         public DateTime Date { get; set; }

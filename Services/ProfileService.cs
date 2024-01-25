@@ -17,7 +17,7 @@ namespace bazyProjektBlazor.Services
         {
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
-            connection.Open();
+            await connection.OpenAsync();
 
             using var command = new MySqlCommand("SELECT firstName, lastName, email FROM users WHERE ID=@ID", connection);
             command.Parameters.AddWithValue("@ID", currentUser.ID);
@@ -40,7 +40,7 @@ namespace bazyProjektBlazor.Services
         {
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
-            connection.Open();
+            await connection.OpenAsync();
             using var command = new MySqlCommand("UPDATE users SET firstName=@firstName, lastName=@lastName, email=@email WHERE ID=@ID", connection);
             command.Parameters.AddWithValue("@firstName", request.FirstName);
             command.Parameters.AddWithValue("@lastName", request.LastName);

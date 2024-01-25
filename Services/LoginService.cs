@@ -34,7 +34,7 @@ namespace bazyProjektBlazor.Services
             int id = -1;
             string roles = "user";
             using var connection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            connection.Open();
+            await connection.OpenAsync();
 
             var queryIsInDatabase = "SELECT ID, isAdmin FROM users WHERE email=@email AND password=@password";
             using var commandIsInDatabase = new MySqlCommand(queryIsInDatabase, connection);
@@ -55,7 +55,7 @@ namespace bazyProjektBlazor.Services
 
                 using (var directorConnection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection")))
                 {
-                    directorConnection.Open();
+                    await directorConnection.OpenAsync();
                     using var commandIsDirector = new MySqlCommand("SELECT directorID FROM departments WHERE directorID=@directorID", directorConnection);
                     commandIsDirector.Parameters.AddWithValue("@directorID", id);
                     int rows = await commandIsDirector.ExecuteNonQueryAsync();
@@ -67,7 +67,7 @@ namespace bazyProjektBlazor.Services
 
                 using (var leaderConnection = new MySqlConnection(configuration.GetConnectionString("DefaultConnection")))
                 {
-                    leaderConnection.Open();
+                    await leaderConnection.OpenAsync();
                     using var commandIsLeader = new MySqlCommand("SELECT teamsmembers.memberID FROM teamsmembers WHERE teamsmembers.memberID = @leaderID AND teamsmembers.isLeader = 1", leaderConnection);
                     commandIsLeader.Parameters.AddWithValue("@leaderID", id);
                     int rows = await commandIsLeader.ExecuteNonQueryAsync();
